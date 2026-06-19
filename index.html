@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comfandi - Agendamiento de Matrículas Académicas</title>
+    <meta name="description"
+        content="Sistema de agendamiento de citas para matrícula académica entre acudientes y docentes de Comfandi sede Yumbo.">
+    <!-- Carga de tipografía moderna desde Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Carga de iconos mediante FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Funcion inline para cerrar el modal de instrucciones.
+         Se define aqui para garantizar que este disponible en el contexto global
+         independientemente del orden de carga del archivo app.js externo. -->
+    <script>
+        function cerrarModal() {
+            var modal = document.getElementById("modal-instrucciones");
+            if (modal) {
+                modal.classList.add("hidden");
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+    <!-- Modal de instrucciones que se muestra al ingresar a la pagina -->
+    <div id="modal-instrucciones" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-logo">
+                    <img src="img/comfandi.jpeg" alt="Comfandi" class="modal-logo-img">
+                </div>
+                <h2 id="modal-title">Bienvenido al Sistema de Agendamiento</h2>
+                <p>Proceso de Matrícula Académica 2026 - Sede Yumbo</p>
+            </div>
+            <div class="modal-body">
+                <p class="modal-intro">Antes de continuar, lea con atención las siguientes instrucciones para
+                    diligenciar correctamente su agendamiento:</p>
+                <ol class="instrucciones-list">
+                    <li>
+                        <span class="inst-num">1</span>
+                        <div>
+                            <strong>Datos del acudiente:</strong> Ingrese su nombre completo, número de teléfono de
+                            contacto y correo electrónico activo. A este correo se le enviará la confirmación de la
+                            cita.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="inst-num">2</span>
+                        <div>
+                            <strong>Datos del estudiante:</strong> Ingrese el nombre completo del estudiante y
+                            seleccione el grado escolar al que pertenece o al que se va a matricular.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="inst-num">3</span>
+                        <div>
+                            <strong>Docente y horario:</strong> Al seleccionar el grado, el sistema mostrará
+                            automáticamente el docente encargado y los horarios de atención disponibles para el proceso
+                            de matrícula.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="inst-num">4</span>
+                        <div>
+                            <strong>Confirmación:</strong> Seleccione el horario de su preferencia y haga clic en
+                            "Confirmar Agendamiento". Recibirá un correo de confirmación con los detalles de su cita.
+                        </div>
+                    </li>
+                    <li>
+                        <span class="inst-num">5</span>
+                        <div>
+                            <strong>Importante:</strong> Cada horario solo puede ser reservado por un acudiente. No
+                            olvide asistir puntualmente a la cita confirmada con la documentación requerida para la
+                            matrícula.
+                        </div>
+                    </li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-cerrar-modal" class="btn btn-primary" onclick="cerrarModal()">
+                    <i class="fa-solid fa-check"></i> Entendido, comenzar agendamiento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de Navegacion -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="img/comfandi.jpeg" alt="Comfandi" class="logo-img" id="logo-comfandi">
+                <div class="logo-divider"></div>
+                <div class="logo-text-block">
+                    <span class="logo-subtitle">Agendamiento de Matrículas</span>
+                    <span class="logo-sede">Sede Yumbo 2026 - 2027</span>
+                </div>
+            </div>
+            <nav class="nav-tabs">
+                <button id="tab-agendar-btn" class="nav-tab active" onclick="switchTab('agendar')">
+                    <i class="fa-regular fa-calendar-plus"></i> Nuevo Agendamiento
+                </button>
+                <button id="tab-citas-btn" class="nav-tab" onclick="switchTab('citas')">
+                    <i class="fa-regular fa-calendar-check"></i> Agendamientos Registrados
+                    <span id="citas-badge" class="badge">0</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="app-main">
+
+        <!-- PESTANA 1: Formulario de Agendamiento -->
+        <section id="section-agendar" class="tab-content active">
+            <div class="grid-container">
+
+                <!-- Tarjeta Lateral de Bienvenida -->
+                <div class="info-card">
+                    <div class="info-card-content">
+                        <span class="tag">Matrícula Académica 2026</span>
+                        <h1>Agenda tu cita de matrícula con el docente</h1>
+                        <p>Programa tu reunión de matrícula de forma ágil, segura y totalmente en línea. Selecciona el
+                            grado del estudiante para consultar el docente encargado y los horarios disponibles de
+                            atención.</p>
+
+                        <!-- Imagen representativa -->
+                        <div class="hero-image-wrapper">
+                            <img src="img/hero.png" alt="Proceso de Matrícula Académica" class="hero-image"
+                                id="hero-img">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta del Formulario de Agendamiento -->
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <h2>Agendamiento de Matrícula | Periodo 2026 - 2027</h2>
+                        <p>Complete el formulario para reservar su cita de matrícula académica.</p>
+                    </div>
+
+                    <form id="form-agendamiento" onsubmit="handleFormSubmit(event)" novalidate>
+                        <!-- Paso 1: Datos del Acudiente -->
+                        <div class="form-section">
+                            <h3 class="section-title"><span class="step-num">1</span> Datos del Acudiente</h3>
+
+                            <div class="form-group-row">
+                                <div class="form-group">
+                                    <label for="input-acudiente">Nombre del Acudiente</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-regular fa-user input-icon"></i>
+                                        <input type="text" id="input-acudiente" placeholder="Ej. Juan Pérez" required>
+                                    </div>
+                                    <span class="error-msg" id="error-acudiente"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="input-telefono">Teléfono de Contacto</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-phone input-icon"></i>
+                                        <input type="tel" id="input-telefono" placeholder="Ej. 3001234567" required>
+                                    </div>
+                                    <span class="error-msg" id="error-telefono"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group-row">
+                                <div class="form-group">
+                                    <label for="input-correo">Correo Electrónico</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-regular fa-envelope input-icon"></i>
+                                        <input type="email" id="input-correo" placeholder="Ej. juan@email.com" required>
+                                    </div>
+                                    <span class="error-msg" id="error-correo"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="input-estudiante">Nombre del Estudiante</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-user-graduate input-icon"></i>
+                                        <input type="text" id="input-estudiante" placeholder="Ej. Pedro Pérez" required>
+                                    </div>
+                                    <span class="error-msg" id="error-estudiante"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2: Seleccion de Grado y Docente -->
+                        <div class="form-section">
+                            <h3 class="section-title"><span class="step-num">2</span> Información Académica</h3>
+
+                            <div class="form-group">
+                                <label for="select-grado">Grado Escolar a Matricular</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-chalkboard-user input-icon"></i>
+                                    <select id="select-grado" onchange="handleGradoChange()" required>
+                                        <option value="" disabled selected>Selecciona el grado escolar...</option>
+                                    </select>
+                                </div>
+                                <span class="error-msg" id="error-grado"></span>
+                            </div>
+
+                            <!-- Informacion Dinamica del Docente -->
+                            <div id="docente-info-box" class="docente-box hidden">
+                                <div class="docente-avatar">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </div>
+                                <div class="docente-details">
+                                    <span class="details-label">Docente Encargado de la Matrícula</span>
+                                    <span id="docente-nombre" class="details-name">-</span>
+                                    <span id="docente-grupo" class="details-group">Grupo: -</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 3: Horarios Disponibles -->
+                        <div class="form-section">
+                            <h3 class="section-title"><span class="step-num">3</span> Horario de Atención</h3>
+
+                            <div class="horarios-container">
+                                <label>Seleccione el día de atención</label>
+                                <div id="dias-grid" class="horarios-grid" style="margin-bottom: 1.5rem;">
+                                    <div class="no-grado-selected">
+                                        <i class="fa-solid fa-calendar-day"></i>
+                                        <span>Selecciona un grado para ver los días disponibles</span>
+                                    </div>
+                                </div>
+
+                                <div id="horas-container" class="hidden">
+                                    <label>Seleccione la hora de atención</label>
+                                    <p class="helper-text">Solo se muestran las horas que aún no han sido reservadas para este grado.</p>
+                                    <div id="horarios-grid" class="horarios-grid">
+                                        <!-- Horas renderizadas aqui -->
+                                    </div>
+                                </div>
+                                <span class="error-msg" id="error-horario"></span>
+                            </div>
+                        </div>
+
+                        <!-- Boton de Envio -->
+                        <button type="submit" id="btn-submit" class="btn btn-primary btn-block">
+                            <i class="fa-solid fa-circle-check"></i> Confirmar Agendamiento de Matrícula
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PESTANA 2: Agendamientos Registrados -->
+        <section id="section-citas" class="tab-content">
+            <div class="dashboard-header">
+                <div class="title-area">
+                    <h1>Agendamientos de Matrícula</h1>
+                    <p>Historial completo de citas de matrícula académica registradas.</p>
+                </div>
+
+                <!-- Buscador Dinamico -->
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="input-buscar" placeholder="Buscar por acudiente, estudiante o docente..."
+                        oninput="filtrarCitas()">
+                </div>
+            </div>
+
+            <!-- Grid de Agendamientos -->
+            <div id="citas-lista-grid" class="citas-grid">
+                <!-- Se poblara dinamicamente -->
+            </div>
+
+            <!-- Estado Vacio -->
+            <div id="citas-empty-state" class="empty-state hidden">
+                <i class="fa-regular fa-folder-open empty-icon"></i>
+                <h3>No hay agendamientos registrados</h3>
+                <p>Los agendamientos de matrícula realizados por los acudientes aparecerán en esta sección.</p>
+                <button class="btn btn-secondary btn-sm" onclick="switchTab('agendar')">
+                    Realizar Primer Agendamiento
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer institucional -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <span class="footer-text">Comfandi E Yumbo &mdash; 2026</span>
+            <span class="footer-sep">|</span>
+            <span class="footer-sub">Sistema de Agendamiento de Matrículas Académicas</span>
+        </div>
+    </footer>
+
+    <!-- Contenedor para Notificaciones flotantes (Toasts) -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Carga de Logica Javascript -->
+    <script src="js/app.js"></script>
+</body>
+
+</html>
