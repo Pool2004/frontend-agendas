@@ -6,7 +6,7 @@ const API_BASE_URL = "https://backend-agendas.onrender.com";
 let gradosDisponibles = [];
 let todasLasCitas = [];
 let correoConsultado = null;
-
+let test = null;
 // ==========================================================================
 // INICIALIZACIÓN DE LA APLICACIÓN
 // La función cerrarModal() se define en el script inline del HTML (en el <head>)
