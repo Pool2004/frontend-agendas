@@ -110,6 +110,51 @@
         </div>
     </div>
 
+    <!-- Modal de Reprogramación -->
+    <div id="modal-reprogramar" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-reprogramar-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modal-reprogramar-title">Reprogramar Cita de Matrícula</h2>
+                <p>Modifique el horario de atención para el proceso académico</p>
+            </div>
+            <div class="modal-body">
+                <div class="docente-box" id="reprogramar-docente-info-box" style="margin-bottom: 1.5rem;">
+                    <div class="docente-avatar">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="docente-details">
+                        <span class="details-label">Docente Encargado</span>
+                        <span id="reprogramar-docente-nombre" class="details-name">-</span>
+                    </div>
+                </div>
+
+                <div class="horarios-container">
+                    <label>Seleccione el nuevo día de atención</label>
+                    <div id="reprogramar-dias-grid" class="horarios-grid" style="margin-bottom: 1.5rem;">
+                        <!-- Renderizado dinámicamente -->
+                    </div>
+
+                    <div id="reprogramar-horas-container" class="hidden">
+                        <label>Seleccione la nueva hora de atención</label>
+                        <p class="helper-text">Solo se muestran las horas que aún no han sido reservadas para este grado.</p>
+                        <div id="reprogramar-horarios-grid" class="horarios-grid">
+                            <!-- Renderizado dinámicamente -->
+                        </div>
+                    </div>
+                    <span class="error-msg" id="error-reprogramar-horario"></span>
+                </div>
+            </div>
+            <div class="modal-footer" style="flex-direction: row; justify-content: flex-end; gap: 1rem; width: 100%;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalReprogramar()">
+                    Cancelar
+                </button>
+                <button type="button" id="btn-submit-reprogramar" class="btn btn-primary" onclick="submitReprogramar()">
+                    Confirmar Reprogramación
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Barra de Navegacion -->
     <header class="app-header">
         <div class="header-container">
@@ -125,7 +170,7 @@
                 <button id="tab-agendar-btn" class="nav-tab active" onclick="switchTab('agendar')">
                     <i class="fa-regular fa-calendar-plus"></i> Nuevo Agendamiento
                 </button>
-                <button id="tab-citas-btn" class="nav-tab hidden-tab" onclick="switchTab('citas')">
+                <button id="tab-citas-btn" class="nav-tab" onclick="switchTab('citas')">
                     <i class="fa-regular fa-calendar-check"></i> Agendamientos Registrados
                     <span id="citas-badge" class="badge">0</span>
                 </button>
@@ -176,6 +221,16 @@
                     <form id="form-agendamiento" onsubmit="handleFormSubmit(event)" novalidate>
                         <!-- Paso 1: Datos del Acudiente -->
                         <div class="form-section">
+
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label for="input-estudiante">Nombre del Estudiante</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-user-graduate input-icon"></i>
+                                    <input type="text" id="input-estudiante" placeholder="Ej. Pedro Pérez" required>
+                                </div>
+                                <span class="error-msg" id="error-estudiante"></span>
+                            </div>
+
                             <h3 class="section-title"><span class="step-num">1</span> Datos del Acudiente</h3>
 
                             <div class="form-group-row">
@@ -219,14 +274,7 @@
                                 </div>
                             </div>
 
-                            <div class="form-group" style="margin-bottom: 1rem;">
-                                <label for="input-estudiante">Nombre del Estudiante</label>
-                                <div class="input-wrapper">
-                                    <i class="fa-solid fa-user-graduate input-icon"></i>
-                                    <input type="text" id="input-estudiante" placeholder="Ej. Pedro Pérez" required>
-                                </div>
-                                <span class="error-msg" id="error-estudiante"></span>
-                            </div>
+
                         </div>
 
                         <!-- Paso 2: Seleccion de Grado y Docente -->
@@ -387,7 +435,7 @@
                             </div>
                             <span class="error-msg" id="error-login-usuario"></span>
                         </div>
-                        
+
                         <div class="form-group" style="margin-bottom: 1.5rem;">
                             <label for="input-login-contrasena">Contraseña</label>
                             <div class="input-wrapper">
@@ -396,7 +444,7 @@
                             </div>
                             <span class="error-msg" id="error-login-contrasena"></span>
                         </div>
-                        
+
                         <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">
                             <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar Sesión
                         </button>

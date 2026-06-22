@@ -15,6 +15,20 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarGrados();
     cargarCitas();
     verificarEstadoSesion();
+
+    // Asignar eventos de validación al terminar de escribir (evento blur)
+    const inputCorreo = document.getElementById("input-correo");
+    const inputConfirmarCorreo = document.getElementById("input-confirmar-correo");
+    
+    if (inputCorreo) {
+        inputCorreo.addEventListener("blur", validarCampoCorreo);
+        inputCorreo.addEventListener("input", () => clearError("correo"));
+    }
+    
+    if (inputConfirmarCorreo) {
+        inputConfirmarCorreo.addEventListener("blur", validarCampoConfirmarCorreo);
+        inputConfirmarCorreo.addEventListener("input", () => clearError("confirmar-correo"));
+    }
 });
 
 // ==========================================================================
@@ -302,23 +316,13 @@ async function handleFormSubmit(event) {
     }
 
     // 3. Validar Correo
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(inputCorreo.value.trim())) {
-        showFieldError("correo", "Ingresa una dirección de correo electrónico válida.");
+    if (!validarCampoCorreo()) {
         isFormValid = false;
-    } else {
-        clearError("correo");
     }
 
     // 3b. Validar Confirmación de Correo
-    if (!inputConfirmarCorreo.value.trim()) {
-        showFieldError("confirmar-correo", "Por favor confirma tu correo electrónico.");
+    if (!validarCampoConfirmarCorreo()) {
         isFormValid = false;
-    } else if (inputConfirmarCorreo.value.trim() !== inputCorreo.value.trim()) {
-        showFieldError("confirmar-correo", "Los correos electrónicos ingresados no coinciden.");
-        isFormValid = false;
-    } else {
-        clearError("confirmar-correo");
     }
 
     // 4. Validar Estudiante
@@ -489,6 +493,7 @@ function renderizarCitas(citas) {
                 <div class="header-actions">
                     <select class="cita-card-actions" onchange="handleCardAction(this, '${cita.grado}', '${escapeHTML(cita.horario)}')">
                         <option value="" disabled selected>Acciones</option>
+                        <option value="reprogramar">Reprogramar cita</option>
                         <option value="cancelar">Cancelar cita</option>
                     </select>
                 </div>
@@ -652,6 +657,8 @@ async function handleCardAction(selectElement, grado, horario) {
                 showToast("Error de conexión", "No se pudo comunicar con el servidor.", "error");
             }
         }
+    } else if (action === "reprogramar") {
+        cargarHorariosReprogramar(grado, horario);
     }
     // Reiniciar el select
     selectElement.value = "";
@@ -825,27 +832,38 @@ function showDayAppointments(year, month, day, appointments) {
     });
 }
 
-// Verifica si hay una sesión iniciada de administrador
+// Verifica si hay una sesión iniciada de administrador y su rol
 function verificarEstadoSesion() {
     const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
+    const adminRole = sessionStorage.getItem("adminRole");
 
-    const btnCitas = document.getElementById("tab-citas-btn");
     const btnCalendario = document.getElementById("tab-calendario-btn");
     const btnLogin = document.getElementById("tab-login-btn");
     const btnLogout = document.getElementById("tab-logout-btn");
 
     if (isLoggedIn) {
-        if (btnCitas) btnCitas.classList.remove("hidden-tab");
-        if (btnCalendario) btnCalendario.classList.remove("hidden-tab");
+        if (adminRole === "Administrativo") {
+            if (btnCalendario) btnCalendario.classList.remove("hidden-tab");
+        } else {
+            if (btnCalendario) btnCalendario.classList.add("hidden-tab");
+        }
         if (btnLogin) btnLogin.classList.add("hidden-tab");
         if (btnLogout) btnLogout.classList.remove("hidden-tab");
-        switchTab("citas");
+        
+        // Si el usuario estaba en calendario y ya no es administrativo, cambiar a citas
+        const activeTab = document.querySelector(".nav-tab.active");
+        if (activeTab && activeTab.id === "tab-calendario-btn" && adminRole !== "Administrativo") {
+            switchTab("citas");
+        }
     } else {
-        if (btnCitas) btnCitas.classList.add("hidden-tab");
         if (btnCalendario) btnCalendario.classList.add("hidden-tab");
         if (btnLogin) btnLogin.classList.remove("hidden-tab");
         if (btnLogout) btnLogout.classList.add("hidden-tab");
-        switchTab("agendar");
+        
+        const activeTab = document.querySelector(".nav-tab.active");
+        if (activeTab && (activeTab.id === "tab-calendario-btn" || activeTab.id === "tab-logout-btn")) {
+            switchTab("agendar");
+        }
     }
 }
 
@@ -894,6 +912,7 @@ async function handleLogin(event) {
         if (response.ok && data.success) {
             showToast("Acceso Concedido", "Sesión iniciada con éxito.", "success");
             sessionStorage.setItem("adminLoggedIn", "true");
+            sessionStorage.setItem("adminRole", data.rol);
 
             // Limpiar formulario
             document.getElementById("form-login").reset();
@@ -917,7 +936,244 @@ function handleLogout() {
     const confirmar = confirm("¿Está seguro de que desea cerrar la sesión?");
     if (confirmar) {
         sessionStorage.removeItem("adminLoggedIn");
+        sessionStorage.removeItem("adminRole");
         showToast("Sesión Cerrada", "Has salido del panel de administración.", "success");
         verificarEstadoSesion();
     }
 }
+
+// Funciones de validación para los campos de correo electrónico
+function validarCampoCorreo() {
+    const inputCorreo = document.getElementById("input-correo");
+    if (!inputCorreo) return false;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const value = inputCorreo.value.trim();
+    
+    if (value === "") {
+        showFieldError("correo", "El correo electrónico es obligatorio.");
+        return false;
+    } else if (!emailRegex.test(value)) {
+        showFieldError("correo", "Ingresa una dirección de correo electrónico válida.");
+        return false;
+    } else {
+        clearError("correo");
+        
+        // Si el campo de confirmar correo ya tiene texto, re-validarlo para asegurar coincidencia
+        const inputConfirmar = document.getElementById("input-confirmar-correo");
+        if (inputConfirmar && inputConfirmar.value.trim() !== "") {
+            validarCampoConfirmarCorreo();
+        }
+        return true;
+    }
+}
+
+function validarCampoConfirmarCorreo() {
+    const inputCorreo = document.getElementById("input-correo");
+    const inputConfirmar = document.getElementById("input-confirmar-correo");
+    if (!inputConfirmar || !inputCorreo) return false;
+    
+    const valCorreo = inputCorreo.value.trim();
+    const valConfirmar = inputConfirmar.value.trim();
+    
+    if (valConfirmar === "") {
+        showFieldError("confirmar-correo", "Por favor confirma tu correo electrónico.");
+        return false;
+    } else if (valConfirmar !== valCorreo) {
+        showFieldError("confirmar-correo", "Los correos electrónicos ingresados no coinciden.");
+        return false;
+    } else {
+        clearError("confirmar-correo");
+        return true;
+    }
+}
+
+// Variables globales para reprogramación de citas
+let reprogramarGradoId = null;
+let reprogramarHorarioActual = null;
+
+// Carga los horarios disponibles para el docente de la cita a reprogramar
+async function cargarHorariosReprogramar(gradoId, horarioActual) {
+    reprogramarGradoId = gradoId;
+    reprogramarHorarioActual = horarioActual;
+
+    const modal = document.getElementById("modal-reprogramar");
+    const docenteNombre = document.getElementById("reprogramar-docente-nombre");
+    const diasGrid = document.getElementById("reprogramar-dias-grid");
+    const horasContainer = document.getElementById("reprogramar-horas-container");
+    const horariosGrid = document.getElementById("reprogramar-horarios-grid");
+    const errorMsg = document.getElementById("error-reprogramar-horario");
+
+    if (errorMsg) errorMsg.textContent = "";
+
+    // Mostrar modal con un estado de cargando
+    docenteNombre.textContent = "Cargando...";
+    diasGrid.innerHTML = `
+        <div class="no-grado-selected">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span>Cargando horarios disponibles...</span>
+        </div>
+    `;
+    horasContainer.classList.add("hidden");
+    horariosGrid.innerHTML = "";
+    
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/horarios/${gradoId}`);
+        if (!response.ok) {
+            throw new Error("No se pudieron obtener los horarios del docente.");
+        }
+
+        const data = await response.json();
+        docenteNombre.textContent = data.docente;
+
+        diasGrid.innerHTML = "";
+        
+        if (!data.horarios || data.horarios.length === 0) {
+            diasGrid.innerHTML = `
+                <div class="no-grado-selected">
+                    <i class="fa-regular fa-calendar-times"></i>
+                    <span>No hay otros horarios disponibles para este docente.</span>
+                </div>
+            `;
+            return;
+        }
+
+        // Agrupar por día
+        const horariosPorDia = {};
+        data.horarios.forEach(horario => {
+            const partes = horario.split(" ");
+            const dia = partes[0] + " " + partes[1]; // e.g. "Mié 8/Jul"
+            const hora = partes[2]; // e.g. "07:00"
+            if (!horariosPorDia[dia]) {
+                horariosPorDia[dia] = [];
+            }
+            horariosPorDia[dia].push({ horario_completo: horario, hora: hora });
+        });
+
+        // Renderizar días
+        Object.keys(horariosPorDia).forEach(dia => {
+            const dayBtn = document.createElement("button");
+            dayBtn.type = "button";
+            dayBtn.className = "btn-dia";
+            dayBtn.innerHTML = `<i class="fa-regular fa-calendar-check"></i> ${formatearDiaCompleto(dia)}`;
+
+            dayBtn.addEventListener("click", (e) => {
+                // Quitar clase activa de otros botones
+                diasGrid.querySelectorAll(".btn-dia").forEach(btn => btn.classList.remove("active"));
+                e.currentTarget.classList.add("active");
+
+                // Mostrar grid de horas
+                horasContainer.classList.remove("hidden");
+                horariosGrid.innerHTML = "";
+
+                // Renderizar horas
+                horariosPorDia[dia].forEach((item, index) => {
+                    const optionContainer = document.createElement("label");
+                    optionContainer.className = "horario-option";
+
+                    const radioInput = document.createElement("input");
+                    radioInput.type = "radio";
+                    radioInput.name = "reprogramar-horario-seleccionado";
+                    radioInput.value = item.horario_completo;
+                    radioInput.id = `reprogramar-horario-${index}`;
+                    radioInput.addEventListener("change", () => {
+                        if (errorMsg) errorMsg.textContent = "";
+                    });
+
+                    const chipDiv = document.createElement("div");
+                    chipDiv.className = "horario-chip";
+
+                    const timeSpan = document.createElement("span");
+                    timeSpan.className = "horario-time";
+                    timeSpan.textContent = item.hora;
+
+                    chipDiv.appendChild(timeSpan);
+                    optionContainer.appendChild(radioInput);
+                    optionContainer.appendChild(chipDiv);
+
+                    horariosGrid.appendChild(optionContainer);
+                });
+            });
+
+            diasGrid.appendChild(dayBtn);
+        });
+
+    } catch (error) {
+        console.error("Error al cargar horarios para reprogramar:", error);
+        diasGrid.innerHTML = `
+            <div class="no-grado-selected">
+                <i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger)"></i>
+                <span>Error al cargar horarios disponibles.</span>
+            </div>
+        `;
+        showToast("Error", error.message, "error");
+    }
+}
+
+// Cierra el modal de reprogramación
+function cerrarModalReprogramar() {
+    const modal = document.getElementById("modal-reprogramar");
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+    reprogramarGradoId = null;
+    reprogramarHorarioActual = null;
+}
+
+// Envía la petición PUT para confirmar la reprogramación de la cita
+async function submitReprogramar() {
+    const errorMsg = document.getElementById("error-reprogramar-horario");
+    const selectedRadio = document.querySelector('input[name="reprogramar-horario-seleccionado"]:checked');
+
+    if (!selectedRadio) {
+        if (errorMsg) {
+            errorMsg.textContent = "Por favor, seleccione un nuevo horario.";
+        }
+        return;
+    }
+
+    const nuevoHorario = selectedRadio.value;
+    const btnSubmit = document.getElementById("btn-submit-reprogramar");
+    
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...';
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/citas/reprogramar`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                grado: reprogramarGradoId,
+                horario_actual: reprogramarHorarioActual,
+                horario_nuevo: nuevoHorario
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showToast("Cita Reprogramada", "El agendamiento ha sido reprogramado con éxito.", "success");
+            cerrarModalReprogramar();
+            await cargarCitas();
+        } else {
+            showToast("No se pudo reprogramar", data.detail || "Error al reprogramar la cita.", "error");
+        }
+    } catch (error) {
+        console.error("Error al reprogramar la cita:", error);
+        showToast("Error de conexión", "No se pudo establecer comunicación con el servidor.", "error");
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = "Confirmar Reprogramación";
+        }
+    }
+}
+
