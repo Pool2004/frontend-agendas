@@ -1449,6 +1449,11 @@ body {
     display: none !important;
 }
 
+/* Clase de utilidad para ocultar elementos */
+.hidden {
+    display: none !important;
+}
+
 /* ==========================================================================
    INICIO DE SESIÓN ADMINISTRATIVO
    ========================================================================== */

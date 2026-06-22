@@ -341,33 +341,69 @@
 
         <!-- PESTANA 2: Agendamientos Registrados -->
         <section id="section-citas" class="tab-content">
-            <div class="dashboard-header">
-                <div class="title-area">
-                    <h1>Agendamientos de Matrícula</h1>
-                    <p>Historial completo de citas de matrícula académica registradas.</p>
-                </div>
-
-                <!-- Buscador Dinamico -->
-                <div class="search-bar">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="input-buscar" placeholder="Buscar por acudiente, estudiante o docente..."
-                        oninput="filtrarCitas()">
+            
+            <!-- Contenedor de Consulta de Correo (Usuario público) -->
+            <div id="citas-consulta-container" class="login-wrapper hidden">
+                <div class="login-card" style="max-width: 480px;">
+                    <div class="login-header">
+                        <i class="fa-regular fa-envelope-open login-shield-icon" style="color: var(--color-primary);"></i>
+                        <h2>Consultar mis Agendamientos</h2>
+                        <p>Ingrese el correo electrónico utilizado al registrar el agendamiento para consultar sus citas.</p>
+                    </div>
+                    <form id="form-consulta-correo" onsubmit="handleConsultarCitas(event)" novalidate>
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label for="input-consulta-correo">Correo Electrónico del Acudiente</label>
+                            <div class="input-wrapper">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" id="input-consulta-correo" placeholder="Ej. acudiente@email.com" required>
+                            </div>
+                            <span class="error-msg" id="error-consulta-correo"></span>
+                        </div>
+                        <button type="submit" id="btn-consulta-submit" class="btn btn-primary btn-block">
+                            <i class="fa-solid fa-magnifying-glass"></i> Consultar Citas
+                        </button>
+                    </form>
                 </div>
             </div>
 
-            <!-- Grid de Agendamientos -->
-            <div id="citas-lista-grid" class="citas-grid">
-                <!-- Se poblara dinamicamente -->
-            </div>
+            <!-- Contenedor de Resultados (Se muestra si está logueado, o tras consultar por correo) -->
+            <div id="citas-resultados-container" class="hidden">
+                <div class="dashboard-header">
+                    <div class="title-area">
+                        <h1>Agendamientos de Matrícula</h1>
+                        <p id="citas-resultados-subtitle">Historial completo de citas de matrícula académica registradas.</p>
+                        <button id="btn-cambiar-consulta-correo" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem; display: none;" onclick="mostrarFormConsulta()">
+                            <i class="fa-solid fa-arrow-left"></i> Consultar otro correo
+                        </button>
+                    </div>
 
-            <!-- Estado Vacio -->
-            <div id="citas-empty-state" class="empty-state hidden">
-                <i class="fa-regular fa-folder-open empty-icon"></i>
-                <h3>No hay agendamientos registrados</h3>
-                <p>Los agendamientos de matrícula realizados por los acudientes aparecerán en esta sección.</p>
-                <button class="btn btn-secondary btn-sm" onclick="switchTab('agendar')">
-                    Realizar Primer Agendamiento
-                </button>
+                    <!-- Buscador Dinamico -->
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="input-buscar" placeholder="Buscar por acudiente, estudiante o docente..."
+                            oninput="filtrarCitas()">
+                    </div>
+                </div>
+
+                <!-- Grid de Agendamientos -->
+                <div id="citas-lista-grid" class="citas-grid">
+                    <!-- Se poblara dinamicamente -->
+                </div>
+
+                <!-- Estado Vacio -->
+                <div id="citas-empty-state" class="empty-state hidden">
+                    <i class="fa-regular fa-folder-open empty-icon"></i>
+                    <h3>No hay agendamientos registrados</h3>
+                    <p id="citas-empty-text">Los agendamientos de matrícula realizados por los acudientes aparecerán en esta sección.</p>
+                    <div class="empty-state-actions" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                        <button id="btn-empty-cambiar-correo" class="btn btn-secondary btn-sm" onclick="mostrarFormConsulta()">
+                            Consultar otro correo
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="switchTab('agendar')">
+                            Realizar Primer Agendamiento
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
 

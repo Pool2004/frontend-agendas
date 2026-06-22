@@ -5,6 +5,7 @@ const API_BASE_URL = "https://backend-agendas.onrender.com";
 // Variables de estado de la aplicación
 let gradosDisponibles = [];
 let todasLasCitas = [];
+let correoConsultado = null;
 
 // ==========================================================================
 // INICIALIZACIÓN DE LA APLICACIÓN
@@ -13,7 +14,6 @@ let todasLasCitas = [];
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
     cargarGrados();
-    cargarCitas();
     verificarEstadoSesion();
 
     // Asignar eventos de validación al terminar de escribir (evento blur)
@@ -66,7 +66,38 @@ function switchTab(tabName) {
             handleGradoChange();
         }
     } else if (tabName === "citas") {
-        cargarCitas();
+        const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
+        if (isLoggedIn) {
+            const consultaCont = document.getElementById("citas-consulta-container");
+            const resultadosCont = document.getElementById("citas-resultados-container");
+            const btnCambiar = document.getElementById("btn-cambiar-consulta-correo");
+            const subtitle = document.getElementById("citas-resultados-subtitle");
+            
+            if (consultaCont) consultaCont.classList.add("hidden");
+            if (resultadosCont) resultadosCont.classList.remove("hidden");
+            if (btnCambiar) btnCambiar.style.display = "none";
+            if (subtitle) subtitle.textContent = "Historial completo de citas de matrícula académica registradas.";
+            cargarCitas();
+        } else {
+            if (correoConsultado) {
+                const consultaCont = document.getElementById("citas-consulta-container");
+                const resultadosCont = document.getElementById("citas-resultados-container");
+                const btnCambiar = document.getElementById("btn-cambiar-consulta-correo");
+                const subtitle = document.getElementById("citas-resultados-subtitle");
+                
+                if (consultaCont) consultaCont.classList.add("hidden");
+                if (resultadosCont) resultadosCont.classList.remove("hidden");
+                if (btnCambiar) btnCambiar.style.display = "inline-block";
+                if (subtitle) subtitle.textContent = `Mostrando citas asociadas al correo: ${correoConsultado}`;
+                cargarCitas(correoConsultado);
+            } else {
+                const consultaCont = document.getElementById("citas-consulta-container");
+                const resultadosCont = document.getElementById("citas-resultados-container");
+                
+                if (consultaCont) consultaCont.classList.remove("hidden");
+                if (resultadosCont) resultadosCont.classList.add("hidden");
+            }
+        }
     } else if (tabName === "calendario") {
         renderCalendar();
         // Seleccionar por defecto el día 8 de Julio de 2026
@@ -242,9 +273,13 @@ async function handleGradoChange() {
 }
 
 // Carga todas las citas registradas en el servidor
-async function cargarCitas() {
+async function cargarCitas(correo = null) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/citas`);
+        let url = `${API_BASE_URL}/api/citas`;
+        if (correo) {
+            url += `?correo=${encodeURIComponent(correo)}`;
+        }
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error("No se pudo obtener la lista de citas.");
         }
@@ -648,7 +683,7 @@ async function handleCardAction(selectElement, grado, horario) {
                 const data = await response.json();
                 if (response.ok) {
                     showToast("Cita Cancelada", "El agendamiento se ha cancelado con éxito y el horario se ha liberado.", "success");
-                    await cargarCitas(); // Recargar datos
+                    await refrescarCitas(); // Recargar datos
                 } else {
                     showToast("Error", data.detail || "No se pudo cancelar el agendamiento.", "error");
                 }
@@ -919,6 +954,7 @@ async function handleLogin(event) {
 
             // Actualizar interfaz
             verificarEstadoSesion();
+            switchTab("citas");
         } else {
             showToast("Error de Acceso", data.detail || "Credenciales incorrectas.", "error");
         }
@@ -937,8 +973,10 @@ function handleLogout() {
     if (confirmar) {
         sessionStorage.removeItem("adminLoggedIn");
         sessionStorage.removeItem("adminRole");
+        correoConsultado = null; // Limpiar consulta del acudiente también
         showToast("Sesión Cerrada", "Has salido del panel de administración.", "success");
         verificarEstadoSesion();
+        switchTab("agendar");
     }
 }
 
@@ -1186,7 +1224,7 @@ async function submitReprogramar() {
         if (response.ok && data.success) {
             showToast("Cita Reprogramada", "El agendamiento ha sido reprogramado con éxito.", "success");
             cerrarModalReprogramar();
-            await cargarCitas();
+            await refrescarCitas();
         } else {
             showToast("No se pudo reprogramar", data.detail || "Error al reprogramar la cita.", "error");
         }
@@ -1200,4 +1238,89 @@ async function submitReprogramar() {
         }
     }
 }
+
+// Actualiza el listado según el estado de la sesión (público filtrado o admin total)
+async function refrescarCitas() {
+    const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
+    if (isLoggedIn) {
+        await cargarCitas();
+    } else if (correoConsultado) {
+        await cargarCitas(correoConsultado);
+    } else {
+        await cargarCitas();
+    }
+}
+
+// Consulta las citas asociadas al correo del acudiente (flujo público)
+async function handleConsultarCitas(event) {
+    event.preventDefault();
+    const inputCorreo = document.getElementById("input-consulta-correo");
+    const errorMsg = document.getElementById("error-consulta-correo");
+    
+    if (errorMsg) errorMsg.textContent = "";
+
+    const correo = inputCorreo.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!correo) {
+        if (errorMsg) errorMsg.textContent = "El correo electrónico es obligatorio.";
+        return;
+    }
+
+    if (!emailRegex.test(correo)) {
+        if (errorMsg) errorMsg.textContent = "Ingrese un correo electrónico válido.";
+        return;
+    }
+
+    const btnSubmit = document.getElementById("btn-consulta-submit");
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Consultando...';
+    }
+
+    try {
+        correoConsultado = correo;
+        await cargarCitas(correo);
+        
+        // Ocultar formulario de consulta y mostrar resultados
+        const consultaCont = document.getElementById("citas-consulta-container");
+        const resultadosCont = document.getElementById("citas-resultados-container");
+        const subtitle = document.getElementById("citas-resultados-subtitle");
+        const btnCambiar = document.getElementById("btn-cambiar-consulta-correo");
+        const emptyText = document.getElementById("citas-empty-text");
+
+        if (consultaCont) consultaCont.classList.add("hidden");
+        if (resultadosCont) resultadosCont.classList.remove("hidden");
+        if (subtitle) subtitle.textContent = `Mostrando citas asociadas al correo: ${correo}`;
+        if (btnCambiar) btnCambiar.style.display = "inline-block";
+        if (emptyText) emptyText.textContent = `No se encontraron agendamientos asociados al correo: ${correo}.`;
+
+    } catch (error) {
+        console.error("Error al consultar citas:", error);
+        showToast("Error de conexión", "No se pudo completar la consulta.", "error");
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Consultar Citas';
+        }
+    }
+}
+
+// Vuelve a mostrar el formulario de consulta de correo
+function mostrarFormConsulta() {
+    correoConsultado = null;
+    const inputCorreo = document.getElementById("input-consulta-correo");
+    if (inputCorreo) inputCorreo.value = "";
+    
+    const consultaCont = document.getElementById("citas-consulta-container");
+    const resultadosCont = document.getElementById("citas-resultados-container");
+    
+    if (consultaCont) consultaCont.classList.remove("hidden");
+    if (resultadosCont) resultadosCont.classList.add("hidden");
+
+    // Limpiar badge
+    const badge = document.getElementById("citas-badge");
+    if (badge) badge.textContent = "0";
+}
+
 
