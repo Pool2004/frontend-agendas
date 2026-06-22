@@ -1,6 +1,6 @@
 // Configuración global de la API del backend
 // Por defecto apunta a localhost:8000 que es la dirección estándar para uvicorn
-const API_BASE_URL = "https://backend-agendas.onrender.com";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 // Variables de estado de la aplicación
 let gradosDisponibles = [];
