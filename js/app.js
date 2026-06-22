@@ -418,7 +418,7 @@ async function handleFormSubmit(event) {
 
         if (response.ok) {
             // Éxito al registrar
-            showToast("Agendamiento Confirmado", data.message || "Su cita de matrícula fue agendada exitosamente. Revise su correo para la confirmación.", "success");
+            showToast("Agendamiento Confirmado", data.message || "Su cita de matrícula fue agendada exitosamente. Revise su correo para la confirmación (si no lo ve, revise su bandeja de spam o correo no deseado).", "success");
 
             // Restablecer formulario
             document.getElementById("form-agendamiento").reset();
