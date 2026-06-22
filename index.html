@@ -118,13 +118,13 @@
                 <p>Modifique el horario de atención para el proceso académico</p>
             </div>
             <div class="modal-body">
-                <div class="docente-box" id="reprogramar-docente-info-box" style="margin-bottom: 1.5rem;">
-                    <div class="docente-avatar">
-                        <i class="fa-solid fa-user-tie"></i>
-                    </div>
-                    <div class="docente-details">
-                        <span class="details-label">Docente Encargado</span>
-                        <span id="reprogramar-docente-nombre" class="details-name">-</span>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="select-reprogramar-grado">Seleccione el Docente / Grado Escolar</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-chalkboard-user input-icon"></i>
+                        <select id="select-reprogramar-grado" onchange="handleReprogramarGradoChange()" required>
+                            <!-- Se poblará dinámicamente -->
+                        </select>
                     </div>
                 </div>
 

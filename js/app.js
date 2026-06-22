@@ -992,13 +992,8 @@ function validarCampoConfirmarCorreo() {
 let reprogramarGradoId = null;
 let reprogramarHorarioActual = null;
 
-// Carga los horarios disponibles para el docente de la cita a reprogramar
-async function cargarHorariosReprogramar(gradoId, horarioActual) {
-    reprogramarGradoId = gradoId;
-    reprogramarHorarioActual = horarioActual;
-
-    const modal = document.getElementById("modal-reprogramar");
-    const docenteNombre = document.getElementById("reprogramar-docente-nombre");
+// Obtiene los horarios disponibles para el docente seleccionado en reprogramación
+async function obtenerHorariosParaReprogramar(gradoId) {
     const diasGrid = document.getElementById("reprogramar-dias-grid");
     const horasContainer = document.getElementById("reprogramar-horas-container");
     const horariosGrid = document.getElementById("reprogramar-horarios-grid");
@@ -1006,8 +1001,6 @@ async function cargarHorariosReprogramar(gradoId, horarioActual) {
 
     if (errorMsg) errorMsg.textContent = "";
 
-    // Mostrar modal con un estado de cargando
-    docenteNombre.textContent = "Cargando...";
     diasGrid.innerHTML = `
         <div class="no-grado-selected">
             <i class="fa-solid fa-circle-notch fa-spin"></i>
@@ -1016,10 +1009,6 @@ async function cargarHorariosReprogramar(gradoId, horarioActual) {
     `;
     horasContainer.classList.add("hidden");
     horariosGrid.innerHTML = "";
-    
-    if (modal) {
-        modal.classList.remove("hidden");
-    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/api/horarios/${gradoId}`);
@@ -1028,8 +1017,6 @@ async function cargarHorariosReprogramar(gradoId, horarioActual) {
         }
 
         const data = await response.json();
-        docenteNombre.textContent = data.docente;
-
         diasGrid.innerHTML = "";
         
         if (!data.horarios || data.horarios.length === 0) {
@@ -1114,6 +1101,40 @@ async function cargarHorariosReprogramar(gradoId, horarioActual) {
     }
 }
 
+// Maneja el cambio de docente/grado en el modal de reprogramación
+function handleReprogramarGradoChange() {
+    const selectReprogramarGrado = document.getElementById("select-reprogramar-grado");
+    if (selectReprogramarGrado) {
+        obtenerHorariosParaReprogramar(selectReprogramarGrado.value);
+    }
+}
+
+// Carga los horarios disponibles para el docente de la cita a reprogramar
+async function cargarHorariosReprogramar(gradoId, horarioActual) {
+    reprogramarGradoId = gradoId;
+    reprogramarHorarioActual = horarioActual;
+
+    const modal = document.getElementById("modal-reprogramar");
+    const selectReprogramarGrado = document.getElementById("select-reprogramar-grado");
+
+    if (selectReprogramarGrado) {
+        selectReprogramarGrado.innerHTML = "";
+        gradosDisponibles.forEach(g => {
+            const option = document.createElement("option");
+            option.value = g.grado;
+            option.textContent = `${g.area} - ${g.docente}`;
+            selectReprogramarGrado.appendChild(option);
+        });
+        selectReprogramarGrado.value = gradoId;
+    }
+
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
+
+    await obtenerHorariosParaReprogramar(gradoId);
+}
+
 // Cierra el modal de reprogramación
 function cerrarModalReprogramar() {
     const modal = document.getElementById("modal-reprogramar");
@@ -1128,6 +1149,7 @@ function cerrarModalReprogramar() {
 async function submitReprogramar() {
     const errorMsg = document.getElementById("error-reprogramar-horario");
     const selectedRadio = document.querySelector('input[name="reprogramar-horario-seleccionado"]:checked');
+    const selectReprogramarGrado = document.getElementById("select-reprogramar-grado");
 
     if (!selectedRadio) {
         if (errorMsg) {
@@ -1137,6 +1159,7 @@ async function submitReprogramar() {
     }
 
     const nuevoHorario = selectedRadio.value;
+    const gradoNuevo = selectReprogramarGrado ? selectReprogramarGrado.value : reprogramarGradoId;
     const btnSubmit = document.getElementById("btn-submit-reprogramar");
     
     if (btnSubmit) {
@@ -1151,7 +1174,8 @@ async function submitReprogramar() {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                grado: reprogramarGradoId,
+                grado_actual: reprogramarGradoId,
+                grado_nuevo: gradoNuevo,
                 horario_actual: reprogramarHorarioActual,
                 horario_nuevo: nuevoHorario
             })

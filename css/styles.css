@@ -947,6 +947,9 @@ body {
     box-shadow: var(--shadow-lg);
     max-width: 580px;
     width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -999,6 +1002,8 @@ body {
 
 .modal-body {
     padding: 1.8rem 2rem;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .modal-intro {
