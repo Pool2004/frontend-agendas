@@ -1,6 +1,6 @@
 // Configuración global de la API del backend
 // Por defecto apunta a localhost:8000 que es la dirección estándar para uvicorn
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://backend-agendas.onrender.com";
 
 // Variables de estado de la aplicación
 let gradosDisponibles = [];
@@ -19,12 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Asignar eventos de validación al terminar de escribir (evento blur)
     const inputCorreo = document.getElementById("input-correo");
     const inputConfirmarCorreo = document.getElementById("input-confirmar-correo");
-    
+
     if (inputCorreo) {
         inputCorreo.addEventListener("blur", validarCampoCorreo);
         inputCorreo.addEventListener("input", () => clearError("correo"));
     }
-    
+
     if (inputConfirmarCorreo) {
         inputConfirmarCorreo.addEventListener("blur", validarCampoConfirmarCorreo);
         inputConfirmarCorreo.addEventListener("input", () => clearError("confirmar-correo"));
@@ -72,7 +72,7 @@ function switchTab(tabName) {
             const resultadosCont = document.getElementById("citas-resultados-container");
             const btnCambiar = document.getElementById("btn-cambiar-consulta-correo");
             const subtitle = document.getElementById("citas-resultados-subtitle");
-            
+
             if (consultaCont) consultaCont.classList.add("hidden");
             if (resultadosCont) resultadosCont.classList.remove("hidden");
             if (btnCambiar) btnCambiar.style.display = "none";
@@ -84,7 +84,7 @@ function switchTab(tabName) {
                 const resultadosCont = document.getElementById("citas-resultados-container");
                 const btnCambiar = document.getElementById("btn-cambiar-consulta-correo");
                 const subtitle = document.getElementById("citas-resultados-subtitle");
-                
+
                 if (consultaCont) consultaCont.classList.add("hidden");
                 if (resultadosCont) resultadosCont.classList.remove("hidden");
                 if (btnCambiar) btnCambiar.style.display = "inline-block";
@@ -93,7 +93,7 @@ function switchTab(tabName) {
             } else {
                 const consultaCont = document.getElementById("citas-consulta-container");
                 const resultadosCont = document.getElementById("citas-resultados-container");
-                
+
                 if (consultaCont) consultaCont.classList.remove("hidden");
                 if (resultadosCont) resultadosCont.classList.add("hidden");
             }
@@ -884,7 +884,7 @@ function verificarEstadoSesion() {
         }
         if (btnLogin) btnLogin.classList.add("hidden-tab");
         if (btnLogout) btnLogout.classList.remove("hidden-tab");
-        
+
         // Si el usuario estaba en calendario y ya no es administrativo, cambiar a citas
         const activeTab = document.querySelector(".nav-tab.active");
         if (activeTab && activeTab.id === "tab-calendario-btn" && adminRole !== "Administrativo") {
@@ -894,7 +894,7 @@ function verificarEstadoSesion() {
         if (btnCalendario) btnCalendario.classList.add("hidden-tab");
         if (btnLogin) btnLogin.classList.remove("hidden-tab");
         if (btnLogout) btnLogout.classList.add("hidden-tab");
-        
+
         const activeTab = document.querySelector(".nav-tab.active");
         if (activeTab && (activeTab.id === "tab-calendario-btn" || activeTab.id === "tab-logout-btn")) {
             switchTab("agendar");
@@ -984,10 +984,10 @@ function handleLogout() {
 function validarCampoCorreo() {
     const inputCorreo = document.getElementById("input-correo");
     if (!inputCorreo) return false;
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const value = inputCorreo.value.trim();
-    
+
     if (value === "") {
         showFieldError("correo", "El correo electrónico es obligatorio.");
         return false;
@@ -996,7 +996,7 @@ function validarCampoCorreo() {
         return false;
     } else {
         clearError("correo");
-        
+
         // Si el campo de confirmar correo ya tiene texto, re-validarlo para asegurar coincidencia
         const inputConfirmar = document.getElementById("input-confirmar-correo");
         if (inputConfirmar && inputConfirmar.value.trim() !== "") {
@@ -1010,10 +1010,10 @@ function validarCampoConfirmarCorreo() {
     const inputCorreo = document.getElementById("input-correo");
     const inputConfirmar = document.getElementById("input-confirmar-correo");
     if (!inputConfirmar || !inputCorreo) return false;
-    
+
     const valCorreo = inputCorreo.value.trim();
     const valConfirmar = inputConfirmar.value.trim();
-    
+
     if (valConfirmar === "") {
         showFieldError("confirmar-correo", "Por favor confirma tu correo electrónico.");
         return false;
@@ -1056,7 +1056,7 @@ async function obtenerHorariosParaReprogramar(gradoId) {
 
         const data = await response.json();
         diasGrid.innerHTML = "";
-        
+
         if (!data.horarios || data.horarios.length === 0) {
             diasGrid.innerHTML = `
                 <div class="no-grado-selected">
@@ -1199,7 +1199,7 @@ async function submitReprogramar() {
     const nuevoHorario = selectedRadio.value;
     const gradoNuevo = selectReprogramarGrado ? selectReprogramarGrado.value : reprogramarGradoId;
     const btnSubmit = document.getElementById("btn-submit-reprogramar");
-    
+
     if (btnSubmit) {
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...';
@@ -1256,7 +1256,7 @@ async function handleConsultarCitas(event) {
     event.preventDefault();
     const inputCorreo = document.getElementById("input-consulta-correo");
     const errorMsg = document.getElementById("error-consulta-correo");
-    
+
     if (errorMsg) errorMsg.textContent = "";
 
     const correo = inputCorreo.value.trim();
@@ -1281,7 +1281,7 @@ async function handleConsultarCitas(event) {
     try {
         correoConsultado = correo;
         await cargarCitas(correo);
-        
+
         // Ocultar formulario de consulta y mostrar resultados
         const consultaCont = document.getElementById("citas-consulta-container");
         const resultadosCont = document.getElementById("citas-resultados-container");
@@ -1311,10 +1311,10 @@ function mostrarFormConsulta() {
     correoConsultado = null;
     const inputCorreo = document.getElementById("input-consulta-correo");
     if (inputCorreo) inputCorreo.value = "";
-    
+
     const consultaCont = document.getElementById("citas-consulta-container");
     const resultadosCont = document.getElementById("citas-resultados-container");
-    
+
     if (consultaCont) consultaCont.classList.remove("hidden");
     if (resultadosCont) resultadosCont.classList.add("hidden");
 
