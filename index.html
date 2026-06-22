@@ -15,14 +15,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Funcion inline para cerrar el modal de instrucciones.
-         Se define aqui para garantizar que este disponible en el contexto global
-         independientemente del orden de carga del archivo app.js externo. -->
     <script>
         function cerrarModal() {
+            var checkbox = document.getElementById("checkbox-terminos");
+            if (checkbox && !checkbox.checked) {
+                alert("Debe aceptar los términos y condiciones para continuar.");
+                return;
+            }
             var modal = document.getElementById("modal-instrucciones");
             if (modal) {
                 modal.classList.add("hidden");
+            }
+        }
+        function toggleModalBtn() {
+            var checkbox = document.getElementById("checkbox-terminos");
+            var btn = document.getElementById("btn-cerrar-modal");
+            if (checkbox && btn) {
+                btn.disabled = !checkbox.checked;
             }
         }
     </script>
@@ -84,8 +93,17 @@
                     </li>
                 </ol>
             </div>
-            <div class="modal-footer">
-                <button id="btn-cerrar-modal" class="btn btn-primary" onclick="cerrarModal()">
+            <div class="modal-footer" style="flex-direction: column; gap: 1rem;">
+                <div class="modal-terms">
+                    <label class="terms-label" for="checkbox-terminos">
+                        <input type="checkbox" id="checkbox-terminos" onchange="toggleModalBtn()">
+                        <span>He leído y acepto los <a href="https://www.comfandi.com.co/legal-comfandi"
+                                target="_blank">términos y
+                                condiciones</a> del proceso de matrícula académica.</span>
+                    </label>
+                    <span class="error-msg" id="error-terminos"></span>
+                </div>
+                <button id="btn-cerrar-modal" class="btn btn-primary" onclick="cerrarModal()" disabled>
                     <i class="fa-solid fa-check"></i> Entendido, comenzar agendamiento
                 </button>
             </div>
@@ -100,16 +118,25 @@
                 <div class="logo-divider"></div>
                 <div class="logo-text-block">
                     <span class="logo-subtitle">Agendamiento de Matrículas</span>
-                    <span class="logo-sede">Sede Yumbo 2026 - 2027</span>
+                    <span class="logo-sede">Campus E Yumbo 2026 - 2027</span>
                 </div>
             </div>
             <nav class="nav-tabs">
                 <button id="tab-agendar-btn" class="nav-tab active" onclick="switchTab('agendar')">
                     <i class="fa-regular fa-calendar-plus"></i> Nuevo Agendamiento
                 </button>
-                <button id="tab-citas-btn" class="nav-tab" onclick="switchTab('citas')">
+                <button id="tab-citas-btn" class="nav-tab hidden-tab" onclick="switchTab('citas')">
                     <i class="fa-regular fa-calendar-check"></i> Agendamientos Registrados
                     <span id="citas-badge" class="badge">0</span>
+                </button>
+                <button id="tab-calendario-btn" class="nav-tab hidden-tab" onclick="switchTab('calendario')">
+                    <i class="fa-regular fa-calendar"></i> Calendario de Citas
+                </button>
+                <button id="tab-login-btn" class="nav-tab" onclick="switchTab('login')">
+                    <i class="fa-solid fa-lock"></i> Acceso Administrativo
+                </button>
+                <button id="tab-logout-btn" class="nav-tab hidden-tab" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
                 </button>
             </nav>
         </div>
@@ -127,7 +154,7 @@
                     <div class="info-card-content">
                         <span class="tag">Matrícula Académica 2026</span>
                         <h1>Agenda tu cita de matrícula con el docente</h1>
-                        <p>Programa tu reunión de matrícula de forma ágil, segura y totalmente en línea. Selecciona el
+                        <p>Programa tu cita de matrícula de forma ágil, segura y totalmente en línea. Selecciona el
                             grado del estudiante para consultar el docente encargado y los horarios disponibles de
                             atención.</p>
 
@@ -142,7 +169,7 @@
                 <!-- Tarjeta del Formulario de Agendamiento -->
                 <div class="form-card">
                     <div class="form-card-header">
-                        <h2>Agendamiento de Matrícula | Periodo 2026 - 2027</h2>
+                        <h2>Agendamiento de Matrícula <br> Periodo 2026 - 2027</h2>
                         <p>Complete el formulario para reservar su cita de matrícula académica.</p>
                     </div>
 
@@ -182,13 +209,23 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="input-estudiante">Nombre del Estudiante</label>
+                                    <label for="input-confirmar-correo">Confirmar Correo Electrónico</label>
                                     <div class="input-wrapper">
-                                        <i class="fa-solid fa-user-graduate input-icon"></i>
-                                        <input type="text" id="input-estudiante" placeholder="Ej. Pedro Pérez" required>
+                                        <i class="fa-regular fa-envelope input-icon"></i>
+                                        <input type="email" id="input-confirmar-correo" placeholder="Ej. juan@email.com"
+                                            required>
                                     </div>
-                                    <span class="error-msg" id="error-estudiante"></span>
+                                    <span class="error-msg" id="error-confirmar-correo"></span>
                                 </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label for="input-estudiante">Nombre del Estudiante</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-user-graduate input-icon"></i>
+                                    <input type="text" id="input-estudiante" placeholder="Ej. Pedro Pérez" required>
+                                </div>
+                                <span class="error-msg" id="error-estudiante"></span>
                             </div>
                         </div>
 
@@ -215,7 +252,6 @@
                                 <div class="docente-details">
                                     <span class="details-label">Docente Encargado de la Matrícula</span>
                                     <span id="docente-nombre" class="details-name">-</span>
-                                    <span id="docente-grupo" class="details-group">Grupo: -</span>
                                 </div>
                             </div>
                         </div>
@@ -235,7 +271,8 @@
 
                                 <div id="horas-container" class="hidden">
                                     <label>Seleccione la hora de atención</label>
-                                    <p class="helper-text">Solo se muestran las horas que aún no han sido reservadas para este grado.</p>
+                                    <p class="helper-text">Solo se muestran las horas que aún no han sido reservadas
+                                        para este grado.</p>
                                     <div id="horarios-grid" class="horarios-grid">
                                         <!-- Horas renderizadas aqui -->
                                     </div>
@@ -283,6 +320,88 @@
                 <button class="btn btn-secondary btn-sm" onclick="switchTab('agendar')">
                     Realizar Primer Agendamiento
                 </button>
+            </div>
+        </section>
+
+        <!-- PESTANA 3: Calendario de Citas -->
+        <section id="section-calendario" class="tab-content">
+            <div class="dashboard-header">
+                <div class="title-area">
+                    <h1>Calendario de Agendamientos</h1>
+                    <p>Visualización mensual y control de citas agendadas por día.</p>
+                </div>
+            </div>
+
+            <div class="calendar-wrapper">
+                <div class="calendar-sidebar">
+                    <div class="sidebar-header">
+                        <h3 id="selected-date-title">Seleccione un día</h3>
+                    </div>
+                    <div id="day-appointments-list" class="sidebar-list">
+                        <p class="no-appointments-msg">Seleccione un día en el calendario para ver los agendamientos.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button type="button" class="calendar-nav-btn" onclick="prevMonth()"><i
+                                class="fa-solid fa-chevron-left"></i></button>
+                        <h2 id="calendar-month-year">Julio 2026</h2>
+                        <button type="button" class="calendar-nav-btn" onclick="nextMonth()"><i
+                                class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+
+                    <div class="calendar-weekdays">
+                        <div>Dom</div>
+                        <div>Lun</div>
+                        <div>Mar</div>
+                        <div>Mié</div>
+                        <div>Jue</div>
+                        <div>Vie</div>
+                        <div>Sáb</div>
+                    </div>
+
+                    <div id="calendar-days-grid" class="calendar-days">
+                        <!-- Generado dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTANA 4: Inicio de Sesión Administrativo -->
+        <section id="section-login" class="tab-content">
+            <div class="login-wrapper">
+                <div class="login-card">
+                    <div class="login-header">
+                        <i class="fa-solid fa-shield-halved login-shield-icon"></i>
+                        <h2>Acceso Administrativo</h2>
+                        <p>Ingrese sus credenciales de funcionario de Comfandi para acceder a los agendamientos.</p>
+                    </div>
+                    <form id="form-login" onsubmit="handleLogin(event)" novalidate>
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="input-login-usuario">Nombre de Usuario</label>
+                            <div class="input-wrapper">
+                                <i class="fa-regular fa-user input-icon"></i>
+                                <input type="text" id="input-login-usuario" placeholder="Ej. admin" required>
+                            </div>
+                            <span class="error-msg" id="error-login-usuario"></span>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label for="input-login-contrasena">Contraseña</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-key input-icon"></i>
+                                <input type="password" id="input-login-contrasena" placeholder="••••••••" required>
+                            </div>
+                            <span class="error-msg" id="error-login-contrasena"></span>
+                        </div>
+                        
+                        <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar Sesión
+                        </button>
+                    </form>
+                </div>
             </div>
         </section>
 

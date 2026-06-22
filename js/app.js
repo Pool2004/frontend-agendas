@@ -12,46 +12,55 @@ let todasLasCitas = [];
 // para garantizar disponibilidad inmediata antes de la carga de este archivo.
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Carga inicial de grados para el selector del formulario
     cargarGrados();
-
-    // Carga de agendamientos registrados para mantener actualizado el dashboard
     cargarCitas();
-
-    // Establecer la sección inicial (Nuevo Agendamiento)
-    switchTab("agendar");
-
-    // El modal de instrucciones se muestra automaticamente al ingresar a la pagina
-    // Se cierra cuando el usuario hace clic en el boton de confirmacion
+    verificarEstadoSesion();
 });
 
 // ==========================================================================
 // NAVEGACIÓN Y TABS
 // ==========================================================================
 function switchTab(tabName) {
-    // Obtener elementos
-    const tabAgendar = document.getElementById("section-agendar");
-    const tabCitas = document.getElementById("section-citas");
-    const btnAgendar = document.getElementById("tab-agendar-btn");
-    const btnCitas = document.getElementById("tab-citas-btn");
+    const tabs = {
+        agendar: { section: "section-agendar", button: "tab-agendar-btn" },
+        citas: { section: "section-citas", button: "tab-citas-btn" },
+        calendario: { section: "section-calendario", button: "tab-calendario-btn" },
+        login: { section: "section-login", button: "tab-login-btn" }
+    };
 
+    // Desactivar todas las pestañas
+    Object.keys(tabs).forEach(key => {
+        const sec = document.getElementById(tabs[key].section);
+        const btn = document.getElementById(tabs[key].button);
+        if (sec) sec.classList.remove("active");
+        if (btn) btn.classList.remove("active");
+    });
+
+    // Activar pestaña solicitada
+    const activeTab = tabs[tabName];
+    if (activeTab) {
+        const sec = document.getElementById(activeTab.section);
+        const btn = document.getElementById(activeTab.button);
+        if (sec) sec.classList.add("active");
+        if (btn) btn.classList.add("active");
+    }
+
+    // Acciones especiales al cambiar de pestaña
     if (tabName === "agendar") {
-        tabAgendar.classList.add("active");
-        tabCitas.classList.remove("active");
-        btnAgendar.classList.add("active");
-        btnCitas.classList.remove("active");
-        // Recargar horarios si hay un grado seleccionado
         const selectGrado = document.getElementById("select-grado");
-        if (selectGrado.value) {
+        if (selectGrado && selectGrado.value) {
             handleGradoChange();
         }
     } else if (tabName === "citas") {
-        tabAgendar.classList.remove("active");
-        tabCitas.classList.add("active");
-        btnAgendar.classList.remove("active");
-        btnCitas.classList.add("active");
-        // Recargar citas al cambiar de pestaña
         cargarCitas();
+    } else if (tabName === "calendario") {
+        renderCalendar();
+        // Seleccionar por defecto el día 8 de Julio de 2026
+        const initialAppointments = todasLasCitas.filter(cita => {
+            const parsed = parseHorarioDate(cita.horario);
+            return parsed && parsed.day === 8 && parsed.month === 6 && parsed.year === 2026;
+        });
+        showDayAppointments(2026, 6, 8, initialAppointments);
     }
 }
 
@@ -78,7 +87,7 @@ async function cargarGrados() {
         gradosDisponibles.forEach(g => {
             const option = document.createElement("option");
             option.value = g.grado;
-            option.textContent = `${g.area} (Grupo ${g.grupo}) - Docente: ${g.docente}`;
+            option.textContent = `${g.area} - ${g.docente}`;
             selectGrado.appendChild(option);
         });
 
@@ -95,7 +104,6 @@ async function handleGradoChange() {
 
     const docenteInfoBox = document.getElementById("docente-info-box");
     const docenteNombre = document.getElementById("docente-nombre");
-    const docenteGrupo = document.getElementById("docente-grupo");
     const diasGrid = document.getElementById("dias-grid");
     const horasContainer = document.getElementById("horas-container");
     const horariosGrid = document.getElementById("horarios-grid");
@@ -129,13 +137,8 @@ async function handleGradoChange() {
 
         const data = await response.json();
 
-        // Buscar el grupo del grado seleccionado para mostrarlo en el cuadro
-        const gradoDetalle = gradosDisponibles.find(g => g.grado === gradoId);
-        const grupoLabel = gradoDetalle ? `Grupo: ${gradoDetalle.grupo}` : "Grupo: N/A";
-
         // Actualizar información del docente
         docenteNombre.textContent = data.docente;
-        docenteGrupo.textContent = grupoLabel;
         docenteInfoBox.classList.remove("hidden");
 
         // Limpiar contenedores
@@ -170,7 +173,7 @@ async function handleGradoChange() {
             const dayBtn = document.createElement("button");
             dayBtn.type = "button";
             dayBtn.className = "btn-dia";
-            dayBtn.innerHTML = `<i class="fa-regular fa-calendar-check"></i> ${dia}`;
+            dayBtn.innerHTML = `<i class="fa-regular fa-calendar-check"></i> ${formatearDiaCompleto(dia)}`;
 
             dayBtn.addEventListener("click", (e) => {
                 // Quitar clase activa de otros botones
@@ -240,6 +243,23 @@ async function cargarCitas() {
         // Renderizar en el listado
         renderizarCitas(todasLasCitas);
 
+        // Refrescar el calendario si está visible
+        const tabCalendario = document.getElementById("section-calendario");
+        if (tabCalendario && tabCalendario.classList.contains("active")) {
+            renderCalendar();
+            const selectedDayEl = document.querySelector(".calendar-day.selected-day");
+            if (selectedDayEl) {
+                const day = parseInt(selectedDayEl.textContent, 10);
+                const year = currentCalendarDate.getFullYear();
+                const month = currentCalendarDate.getMonth();
+                const dayAppointments = todasLasCitas.filter(cita => {
+                    const parsed = parseHorarioDate(cita.horario);
+                    return parsed && parsed.day === day && parsed.month === month && parsed.year === year;
+                });
+                showDayAppointments(year, month, day, dayAppointments);
+            }
+        }
+
     } catch (error) {
         console.error("Error al cargar citas:", error);
         showToast("Error de sincronización", "No se pudo actualizar el listado de citas.", "error");
@@ -256,6 +276,7 @@ async function handleFormSubmit(event) {
     const inputAcudiente = document.getElementById("input-acudiente");
     const inputTelefono = document.getElementById("input-telefono");
     const inputCorreo = document.getElementById("input-correo");
+    const inputConfirmarCorreo = document.getElementById("input-confirmar-correo");
     const inputEstudiante = document.getElementById("input-estudiante");
     const selectGrado = document.getElementById("select-grado");
 
@@ -287,6 +308,17 @@ async function handleFormSubmit(event) {
         isFormValid = false;
     } else {
         clearError("correo");
+    }
+
+    // 3b. Validar Confirmación de Correo
+    if (!inputConfirmarCorreo.value.trim()) {
+        showFieldError("confirmar-correo", "Por favor confirma tu correo electrónico.");
+        isFormValid = false;
+    } else if (inputConfirmarCorreo.value.trim() !== inputCorreo.value.trim()) {
+        showFieldError("confirmar-correo", "Los correos electrónicos ingresados no coinciden.");
+        isFormValid = false;
+    } else {
+        clearError("confirmar-correo");
     }
 
     // 4. Validar Estudiante
@@ -437,7 +469,13 @@ function renderizarCitas(citas) {
         const gradoDetalle = gradosDisponibles.find(g => g.grado === cita.grado);
         const docenteNombre = gradoDetalle ? gradoDetalle.docente : "No asignado";
         const areaNombre = gradoDetalle ? gradoDetalle.area : "Área no asignada";
-        const grupoNombre = gradoDetalle ? `(Grupo ${gradoDetalle.grupo})` : "";
+
+        let horarioFormateado = cita.horario;
+        const partesHorario = cita.horario.split(" ");
+        if (partesHorario.length >= 3) {
+            const diaFormateado = formatearDiaCompleto(partesHorario[0] + " " + partesHorario[1]);
+            horarioFormateado = `${diaFormateado} a las ${partesHorario[2]}`;
+        }
 
         const card = document.createElement("div");
         card.className = "cita-card";
@@ -446,9 +484,14 @@ function renderizarCitas(citas) {
             <div class="cita-card-header">
                 <div class="student-info">
                     <span class="student-name">${escapeHTML(cita.estudiante)}</span>
-                    <span class="student-grade">${escapeHTML(areaNombre)} ${escapeHTML(grupoNombre)}</span>
+                    <span class="student-grade">${escapeHTML(areaNombre)}</span>
                 </div>
-                <span class="cita-card-badge">Matricula Agendada</span>
+                <div class="header-actions">
+                    <select class="cita-card-actions" onchange="handleCardAction(this, '${cita.grado}', '${escapeHTML(cita.horario)}')">
+                        <option value="" disabled selected>Acciones</option>
+                        <option value="cancelar">Cancelar cita</option>
+                    </select>
+                </div>
             </div>
             
             <div class="cita-card-body">
@@ -481,7 +524,7 @@ function renderizarCitas(citas) {
             
             <div class="cita-card-footer">
                 <i class="fa-regular fa-calendar"></i>
-                <span>${escapeHTML(cita.horario)}</span>
+                <span>${escapeHTML(horarioFormateado)}</span>
             </div>
         `;
 
@@ -531,6 +574,26 @@ function escapeHTML(str) {
         .replace(/'/g, "&#039;");
 }
 
+// Convierte una fecha abreviada como "Mié 8/Jul" a formato completo "8 de Julio de 2026"
+function formatearDiaCompleto(diaAbreviado) {
+    const partes = diaAbreviado.split(" ");
+    if (partes.length < 2) return diaAbreviado;
+    const fechaParts = partes[1].split("/");
+    if (fechaParts.length < 2) return diaAbreviado;
+    const numeroDia = fechaParts[0];
+    const mesAbrev = fechaParts[1];
+
+    const meses = {
+        "Ene": "Enero", "Feb": "Febrero", "Mar": "Marzo",
+        "Abr": "Abril", "May": "Mayo", "Jun": "Junio",
+        "Jul": "Julio", "Ago": "Agosto", "Sep": "Septiembre",
+        "Oct": "Octubre", "Nov": "Noviembre", "Dic": "Diciembre"
+    };
+
+    const mesCompleto = meses[mesAbrev] || mesAbrev;
+    return `${numeroDia} de ${mesCompleto} de 2026`;
+}
+
 // Sistema dinámico de alertas (Toasts)
 function showToast(title, message, type = "success") {
     const container = document.getElementById("toast-container");
@@ -565,4 +628,296 @@ function showToast(title, message, type = "success") {
             setTimeout(() => toast.remove(), 300);
         }
     }, 4000);
+}
+
+// Manejador de las acciones de cada tarjeta de cita (ej. Cancelación)
+async function handleCardAction(selectElement, grado, horario) {
+    const action = selectElement.value;
+    if (action === "cancelar") {
+        const confirmar = confirm("¿Está seguro de que desea cancelar este agendamiento? El horario asignado se liberará.");
+        if (confirmar) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/citas?grado=${encodeURIComponent(grado)}&horario=${encodeURIComponent(horario)}`, {
+                    method: "DELETE"
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showToast("Cita Cancelada", "El agendamiento se ha cancelado con éxito y el horario se ha liberado.", "success");
+                    await cargarCitas(); // Recargar datos
+                } else {
+                    showToast("Error", data.detail || "No se pudo cancelar el agendamiento.", "error");
+                }
+            } catch (error) {
+                console.error("Error al cancelar la cita:", error);
+                showToast("Error de conexión", "No se pudo comunicar con el servidor.", "error");
+            }
+        }
+    }
+    // Reiniciar el select
+    selectElement.value = "";
+}
+
+// Variables globales para la gestión del Calendario
+let currentCalendarDate = new Date(2026, 6, 1); // Julio de 2026 por defecto
+
+// Renderiza los días y citas en el grid del calendario
+function renderCalendar() {
+    const monthYearTitle = document.getElementById("calendar-month-year");
+    const daysGrid = document.getElementById("calendar-days-grid");
+    
+    if (!monthYearTitle || !daysGrid) return;
+    
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    const monthNames = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    
+    monthYearTitle.textContent = `${monthNames[month]} ${year}`;
+    daysGrid.innerHTML = "";
+    
+    // Obtener primer día de la semana del mes y total de días
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    
+    // Obtener días totales del mes anterior para relleno
+    const prevTotalDays = new Date(year, month, 0).getDate();
+    
+    // Rellenar días del mes anterior
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "calendar-day padding-day";
+        dayDiv.textContent = prevTotalDays - i;
+        daysGrid.appendChild(dayDiv);
+    }
+    
+    // Rellenar días del mes actual
+    for (let day = 1; day <= totalDays; day++) {
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "calendar-day current-month-day";
+        dayDiv.textContent = day;
+        
+        // Buscar agendamientos en este día específico
+        const dayAppointments = todasLasCitas.filter(cita => {
+            const parsed = parseHorarioDate(cita.horario);
+            return parsed && parsed.day === day && parsed.month === month && parsed.year === year;
+        });
+        
+        if (dayAppointments.length > 0) {
+            dayDiv.classList.add("has-events");
+            
+            const badge = document.createElement("span");
+            badge.className = "calendar-event-badge";
+            badge.textContent = dayAppointments.length;
+            dayDiv.appendChild(badge);
+        }
+        
+        // Marcar día de hoy
+        const today = new Date();
+        if (today.getDate() === day && today.getMonth() === month && today.getFullYear() === year) {
+            dayDiv.classList.add("today");
+        }
+        
+        // Evento de clic en un día
+        dayDiv.addEventListener("click", () => {
+            document.querySelectorAll(".calendar-day").forEach(d => d.classList.remove("selected-day"));
+            dayDiv.classList.add("selected-day");
+            showDayAppointments(year, month, day, dayAppointments);
+        });
+        
+        // Autoseleccionar el día por defecto si ya estaba seleccionado
+        const selectedDayEl = document.querySelector(".calendar-day.selected-day");
+        if (selectedDayEl && parseInt(selectedDayEl.textContent, 10) === day) {
+            dayDiv.classList.add("selected-day");
+        }
+        
+        daysGrid.appendChild(dayDiv);
+    }
+}
+
+// Avanzar/Retroceder meses
+function prevMonth() {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+    renderCalendar();
+}
+
+function nextMonth() {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+    renderCalendar();
+}
+
+// Parsea fechas del formato "Mié 8/Jul 07:00"
+function parseHorarioDate(horarioStr) {
+    if (!horarioStr) return null;
+    const parts = horarioStr.split(" ");
+    if (parts.length < 2) return null;
+    const dateParts = parts[1].split("/");
+    if (dateParts.length < 2) return null;
+    
+    const day = parseInt(dateParts[0], 10);
+    const monthAbrev = dateParts[1].toLowerCase();
+    
+    const monthsMap = {
+        'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
+        'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
+    };
+    
+    const month = monthsMap[monthAbrev] !== undefined ? monthsMap[monthAbrev] : 6; // Julio por defecto
+    
+    return {
+        day: day,
+        month: month,
+        year: 2026 // Año base
+    };
+}
+
+// Muestra las citas en el listado lateral
+function showDayAppointments(year, month, day, appointments) {
+    const monthNames = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    
+    const title = document.getElementById("selected-date-title");
+    const container = document.getElementById("day-appointments-list");
+    
+    if (!title || !container) return;
+    
+    title.textContent = `${day} de ${monthNames[month]} de ${year}`;
+    container.innerHTML = "";
+    
+    if (appointments.length === 0) {
+        container.innerHTML = `
+            <div class="no-appointments-container">
+                <i class="fa-regular fa-calendar-check"></i>
+                <p>No hay agendamientos registrados para este día.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    appointments.forEach(cita => {
+        const item = document.createElement("div");
+        item.className = "calendar-app-item";
+        
+        const gradoDetalle = gradosDisponibles.find(g => g.grado === cita.grado);
+        const docenteNombre = gradoDetalle ? gradoDetalle.docente : "No asignado";
+        const areaNombre = gradoDetalle ? gradoDetalle.area : "Área no asignada";
+        
+        const parts = cita.horario.split(" ");
+        const hora = parts.length > 2 ? parts[2] : cita.horario;
+        
+        item.innerHTML = `
+            <div class="app-item-header">
+                <span class="app-item-time"><i class="fa-regular fa-clock"></i> ${hora}</span>
+                <span class="app-item-grade">${escapeHTML(areaNombre)}</span>
+            </div>
+            <div class="app-item-body">
+                <p><strong>Estudiante:</strong> ${escapeHTML(cita.estudiante)}</p>
+                <p><strong>Acudiente:</strong> ${escapeHTML(cita.acudiente)}</p>
+                <p><strong>Teléfono:</strong> ${escapeHTML(cita.telefono)}</p>
+                <p><strong>Docente:</strong> ${escapeHTML(docenteNombre)}</p>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+// Verifica si hay una sesión iniciada de administrador
+function verificarEstadoSesion() {
+    const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
+    
+    const btnCitas = document.getElementById("tab-citas-btn");
+    const btnCalendario = document.getElementById("tab-calendario-btn");
+    const btnLogin = document.getElementById("tab-login-btn");
+    const btnLogout = document.getElementById("tab-logout-btn");
+    
+    if (isLoggedIn) {
+        if (btnCitas) btnCitas.classList.remove("hidden-tab");
+        if (btnCalendario) btnCalendario.classList.remove("hidden-tab");
+        if (btnLogin) btnLogin.classList.add("hidden-tab");
+        if (btnLogout) btnLogout.classList.remove("hidden-tab");
+        switchTab("citas");
+    } else {
+        if (btnCitas) btnCitas.classList.add("hidden-tab");
+        if (btnCalendario) btnCalendario.classList.add("hidden-tab");
+        if (btnLogin) btnLogin.classList.remove("hidden-tab");
+        if (btnLogout) btnLogout.classList.add("hidden-tab");
+        switchTab("agendar");
+    }
+}
+
+// Envía la petición de login al backend
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    const inputUsuario = document.getElementById("input-login-usuario");
+    const inputContrasena = document.getElementById("input-login-contrasena");
+    const btnSubmit = document.getElementById("btn-login-submit");
+    
+    const errorUsuario = document.getElementById("error-login-usuario");
+    const errorContrasena = document.getElementById("error-login-contrasena");
+    
+    // Resetear errores
+    if (errorUsuario) errorUsuario.textContent = "";
+    if (errorContrasena) errorContrasena.textContent = "";
+    
+    let isValid = true;
+    if (!inputUsuario.value.trim()) {
+        if (errorUsuario) errorUsuario.textContent = "El usuario es obligatorio.";
+        isValid = false;
+    }
+    if (!inputContrasena.value.trim()) {
+        if (errorContrasena) errorContrasena.textContent = "La contraseña es obligatoria.";
+        isValid = false;
+    }
+    
+    if (!isValid) return;
+    
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                usuario: inputUsuario.value.trim(),
+                contrasena: inputContrasena.value.trim()
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showToast("Acceso Concedido", "Sesión iniciada con éxito.", "success");
+            sessionStorage.setItem("adminLoggedIn", "true");
+            
+            // Limpiar formulario
+            document.getElementById("form-login").reset();
+            
+            // Actualizar interfaz
+            verificarEstadoSesion();
+        } else {
+            showToast("Error de Acceso", data.detail || "Credenciales incorrectas.", "error");
+        }
+    } catch (error) {
+        console.error("Error al iniciar sesión:", error);
+        showToast("Error de conexión", "No se pudo conectar con el servidor.", "error");
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar Sesión';
+    }
+}
+
+// Cierra la sesión del administrador
+function handleLogout() {
+    const confirmar = confirm("¿Está seguro de que desea cerrar la sesión?");
+    if (confirmar) {
+        sessionStorage.removeItem("adminLoggedIn");
+        showToast("Sesión Cerrada", "Has salido del panel de administración.", "success");
+        verificarEstadoSesion();
+    }
 }
