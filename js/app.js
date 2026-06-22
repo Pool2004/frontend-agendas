@@ -1,6 +1,6 @@
 // Configuración global de la API del backend
 // Por defecto apunta a localhost:8000 que es la dirección estándar para uvicorn
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://backend-agendas.onrender.com";
 
 // Variables de estado de la aplicación
 let gradosDisponibles = [];
@@ -664,27 +664,27 @@ let currentCalendarDate = new Date(2026, 6, 1); // Julio de 2026 por defecto
 function renderCalendar() {
     const monthYearTitle = document.getElementById("calendar-month-year");
     const daysGrid = document.getElementById("calendar-days-grid");
-    
+
     if (!monthYearTitle || !daysGrid) return;
-    
+
     const year = currentCalendarDate.getFullYear();
     const month = currentCalendarDate.getMonth();
-    
+
     const monthNames = [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     ];
-    
+
     monthYearTitle.textContent = `${monthNames[month]} ${year}`;
     daysGrid.innerHTML = "";
-    
+
     // Obtener primer día de la semana del mes y total de días
     const firstDayIndex = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
-    
+
     // Obtener días totales del mes anterior para relleno
     const prevTotalDays = new Date(year, month, 0).getDate();
-    
+
     // Rellenar días del mes anterior
     for (let i = firstDayIndex - 1; i >= 0; i--) {
         const dayDiv = document.createElement("div");
@@ -692,47 +692,47 @@ function renderCalendar() {
         dayDiv.textContent = prevTotalDays - i;
         daysGrid.appendChild(dayDiv);
     }
-    
+
     // Rellenar días del mes actual
     for (let day = 1; day <= totalDays; day++) {
         const dayDiv = document.createElement("div");
         dayDiv.className = "calendar-day current-month-day";
         dayDiv.textContent = day;
-        
+
         // Buscar agendamientos en este día específico
         const dayAppointments = todasLasCitas.filter(cita => {
             const parsed = parseHorarioDate(cita.horario);
             return parsed && parsed.day === day && parsed.month === month && parsed.year === year;
         });
-        
+
         if (dayAppointments.length > 0) {
             dayDiv.classList.add("has-events");
-            
+
             const badge = document.createElement("span");
             badge.className = "calendar-event-badge";
             badge.textContent = dayAppointments.length;
             dayDiv.appendChild(badge);
         }
-        
+
         // Marcar día de hoy
         const today = new Date();
         if (today.getDate() === day && today.getMonth() === month && today.getFullYear() === year) {
             dayDiv.classList.add("today");
         }
-        
+
         // Evento de clic en un día
         dayDiv.addEventListener("click", () => {
             document.querySelectorAll(".calendar-day").forEach(d => d.classList.remove("selected-day"));
             dayDiv.classList.add("selected-day");
             showDayAppointments(year, month, day, dayAppointments);
         });
-        
+
         // Autoseleccionar el día por defecto si ya estaba seleccionado
         const selectedDayEl = document.querySelector(".calendar-day.selected-day");
         if (selectedDayEl && parseInt(selectedDayEl.textContent, 10) === day) {
             dayDiv.classList.add("selected-day");
         }
-        
+
         daysGrid.appendChild(dayDiv);
     }
 }
@@ -755,17 +755,17 @@ function parseHorarioDate(horarioStr) {
     if (parts.length < 2) return null;
     const dateParts = parts[1].split("/");
     if (dateParts.length < 2) return null;
-    
+
     const day = parseInt(dateParts[0], 10);
     const monthAbrev = dateParts[1].toLowerCase();
-    
+
     const monthsMap = {
         'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
         'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
     };
-    
+
     const month = monthsMap[monthAbrev] !== undefined ? monthsMap[monthAbrev] : 6; // Julio por defecto
-    
+
     return {
         day: day,
         month: month,
@@ -779,15 +779,15 @@ function showDayAppointments(year, month, day, appointments) {
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     ];
-    
+
     const title = document.getElementById("selected-date-title");
     const container = document.getElementById("day-appointments-list");
-    
+
     if (!title || !container) return;
-    
+
     title.textContent = `${day} de ${monthNames[month]} de ${year}`;
     container.innerHTML = "";
-    
+
     if (appointments.length === 0) {
         container.innerHTML = `
             <div class="no-appointments-container">
@@ -797,18 +797,18 @@ function showDayAppointments(year, month, day, appointments) {
         `;
         return;
     }
-    
+
     appointments.forEach(cita => {
         const item = document.createElement("div");
         item.className = "calendar-app-item";
-        
+
         const gradoDetalle = gradosDisponibles.find(g => g.grado === cita.grado);
         const docenteNombre = gradoDetalle ? gradoDetalle.docente : "No asignado";
         const areaNombre = gradoDetalle ? gradoDetalle.area : "Área no asignada";
-        
+
         const parts = cita.horario.split(" ");
         const hora = parts.length > 2 ? parts[2] : cita.horario;
-        
+
         item.innerHTML = `
             <div class="app-item-header">
                 <span class="app-item-time"><i class="fa-regular fa-clock"></i> ${hora}</span>
@@ -828,12 +828,12 @@ function showDayAppointments(year, month, day, appointments) {
 // Verifica si hay una sesión iniciada de administrador
 function verificarEstadoSesion() {
     const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
-    
+
     const btnCitas = document.getElementById("tab-citas-btn");
     const btnCalendario = document.getElementById("tab-calendario-btn");
     const btnLogin = document.getElementById("tab-login-btn");
     const btnLogout = document.getElementById("tab-logout-btn");
-    
+
     if (isLoggedIn) {
         if (btnCitas) btnCitas.classList.remove("hidden-tab");
         if (btnCalendario) btnCalendario.classList.remove("hidden-tab");
@@ -852,18 +852,18 @@ function verificarEstadoSesion() {
 // Envía la petición de login al backend
 async function handleLogin(event) {
     event.preventDefault();
-    
+
     const inputUsuario = document.getElementById("input-login-usuario");
     const inputContrasena = document.getElementById("input-login-contrasena");
     const btnSubmit = document.getElementById("btn-login-submit");
-    
+
     const errorUsuario = document.getElementById("error-login-usuario");
     const errorContrasena = document.getElementById("error-login-contrasena");
-    
+
     // Resetear errores
     if (errorUsuario) errorUsuario.textContent = "";
     if (errorContrasena) errorContrasena.textContent = "";
-    
+
     let isValid = true;
     if (!inputUsuario.value.trim()) {
         if (errorUsuario) errorUsuario.textContent = "El usuario es obligatorio.";
@@ -873,12 +873,12 @@ async function handleLogin(event) {
         if (errorContrasena) errorContrasena.textContent = "La contraseña es obligatoria.";
         isValid = false;
     }
-    
+
     if (!isValid) return;
-    
+
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/login`, {
             method: "POST",
@@ -888,16 +888,16 @@ async function handleLogin(event) {
                 contrasena: inputContrasena.value.trim()
             })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
             showToast("Acceso Concedido", "Sesión iniciada con éxito.", "success");
             sessionStorage.setItem("adminLoggedIn", "true");
-            
+
             // Limpiar formulario
             document.getElementById("form-login").reset();
-            
+
             // Actualizar interfaz
             verificarEstadoSesion();
         } else {
