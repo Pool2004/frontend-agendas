@@ -417,9 +417,6 @@ async function handleFormSubmit(event) {
         const data = await response.json();
 
         if (response.ok) {
-            // Éxito al registrar
-            showToast("Agendamiento Confirmado", data.message || "Su cita de matrícula fue agendada exitosamente. Revise su correo para la confirmación (si no lo ve, revise su bandeja de spam o correo no deseado).", "success");
-
             // Restablecer formulario
             document.getElementById("form-agendamiento").reset();
             document.getElementById("docente-info-box").classList.add("hidden");
@@ -435,10 +432,8 @@ async function handleFormSubmit(event) {
             // Actualizar datos
             await cargarCitas();
 
-            // Redirigir suavemente a la pestaña de citas
-            setTimeout(() => {
-                switchTab("citas");
-            }, 800);
+            // Mostrar el nuevo modal de confirmación con los datos correspondientes
+            mostrarModalConfirmacion(payload.estudiante, payload.grado, payload.horario);
 
         } else {
             // Manejo de errores controlados por la API
@@ -1211,6 +1206,75 @@ function cerrarModalReprogramar() {
     }
     reprogramarGradoId = null;
     reprogramarHorarioActual = null;
+}
+
+let countdownInterval = null;
+
+// Muestra el modal de confirmación con cuenta regresiva de 10s
+function mostrarModalConfirmacion(estudiante, gradoId, horario) {
+    const modal = document.getElementById("modal-confirmacion-cita");
+    const btnCerrar = document.getElementById("btn-cerrar-confirmacion");
+    const timerSpan = document.getElementById("countdown-timer");
+
+    const gradoDetalle = gradosDisponibles.find(g => g.grado === gradoId);
+    const docenteNombre = gradoDetalle ? gradoDetalle.docente : "No asignado";
+    const areaNombre = gradoDetalle ? gradoDetalle.area : "Área no asignada";
+
+    let horarioFormateado = horario;
+    const partesHorario = horario.split(" ");
+    if (partesHorario.length >= 3) {
+        const diaFormateado = formatearDiaCompleto(partesHorario[0] + " " + partesHorario[1]);
+        horarioFormateado = `${diaFormateado} a las ${partesHorario[2]}`;
+    }
+
+    // Poblar campos del resumen
+    document.getElementById("conf-estudiante").textContent = estudiante;
+    document.getElementById("conf-grado").textContent = areaNombre;
+    document.getElementById("conf-docente").textContent = docenteNombre;
+    document.getElementById("conf-horario").textContent = horarioFormateado;
+
+    // Configurar e iniciar temporizador
+    btnCerrar.disabled = true;
+    let secondsLeft = 10;
+    if (timerSpan) {
+        timerSpan.textContent = secondsLeft;
+    }
+    btnCerrar.innerHTML = `<i class="fa-solid fa-envelope-open-text"></i> Entendido, revisaré mi correo (<span id="countdown-timer">${secondsLeft}</span>s)`;
+
+    // Mostrar modal
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
+
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+
+    countdownInterval = setInterval(() => {
+        secondsLeft--;
+        if (secondsLeft <= 0) {
+            clearInterval(countdownInterval);
+            btnCerrar.disabled = false;
+            btnCerrar.innerHTML = `<i class="fa-solid fa-envelope-open-text"></i> Entendido, ir a mis citas`;
+        } else {
+            const span = document.getElementById("countdown-timer");
+            if (span) {
+                span.textContent = secondsLeft;
+            }
+        }
+    }, 1000);
+}
+
+// Cierra el modal de confirmación y redirige a la pestaña de citas
+function cerrarModalConfirmacion() {
+    const modal = document.getElementById("modal-confirmacion-cita");
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+    switchTab("citas");
 }
 
 // Envía la petición PUT para confirmar la reprogramación de la cita

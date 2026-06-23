@@ -2048,3 +2048,138 @@ html, body {
         padding: 0.4rem 0.5rem;
     }
 }
+
+/* ==========================================================================
+   MODAL DE CONFIRMACIÓN DE AGENDAMIENTO
+   ========================================================================== */
+.modal-confirmacion {
+    max-width: 520px !important;
+    border: 2px solid var(--color-success);
+}
+
+.header-exito {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+    padding: 2.2rem 2rem 1.8rem;
+}
+
+.modal-success-icon {
+    font-size: 3.5rem;
+    color: white;
+    margin-bottom: 0.8rem;
+    animation: scaleInBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes scaleInBounce {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    70% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.text-center {
+    text-align: center;
+}
+
+.confirmacion-detalle {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.detalle-principal {
+    font-size: 1.05rem;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.alerta-spam {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background-color: #fef2f2;
+    border: 1.5px solid #fee2e2;
+    border-left: 5px solid var(--color-danger);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    text-align: left;
+}
+
+.alerta-spam-icon {
+    font-size: 1.5rem;
+    color: var(--color-danger);
+    margin-top: 0.15rem;
+    animation: pulseWarning 1.5s infinite;
+}
+
+@keyframes pulseWarning {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.alerta-spam-texto strong {
+    color: #991b1b;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.alerta-spam-texto p {
+    font-size: 0.85rem;
+    color: #7f1d1d;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.resumen-cita {
+    background-color: var(--bg-body);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.1rem;
+    text-align: left;
+}
+
+.resumen-cita h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.6rem;
+    border-bottom: 1.5px solid var(--border-color);
+    padding-bottom: 0.3rem;
+}
+
+.resumen-cita ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resumen-cita li {
+    font-size: 0.88rem;
+    color: #475569;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.resumen-cita li strong {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.resumen-cita li span {
+    font-weight: 600;
+    color: var(--color-secondary);
+    text-align: right;
+}

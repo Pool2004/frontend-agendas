@@ -158,6 +158,48 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmación de Agendamiento -->
+    <div id="modal-confirmacion-cita" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="modal-confirmacion-title">
+        <div class="modal-card modal-confirmacion">
+            <div class="modal-header header-exito">
+                <div class="modal-success-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h2 id="modal-confirmacion-title">¡Agendamiento Confirmado!</h2>
+                <p>Tu cita de matrícula ha sido reservada con éxito</p>
+            </div>
+            <div class="modal-body text-center">
+                <div class="confirmacion-detalle">
+                    <p class="detalle-principal">Se ha enviado un correo con todos los detalles de la cita.</p>
+                    
+                    <div class="alerta-spam">
+                        <i class="fa-solid fa-circle-exclamation alerta-spam-icon"></i>
+                        <div class="alerta-spam-texto">
+                            <strong>¡ATENCIÓN ACUDIENTE!</strong>
+                            <p>El correo de confirmación suele llegar directamente a la bandeja de <strong>Correo no deseado (Spam)</strong>. Por favor, revise esa bandeja y marque el correo como "No es spam" para asegurar recibir futuras notificaciones.</p>
+                        </div>
+                    </div>
+
+                    <div class="resumen-cita">
+                        <h4>Resumen de la Cita:</h4>
+                        <ul>
+                            <li><strong>Estudiante:</strong> <span id="conf-estudiante">-</span></li>
+                            <li><strong>Grado / Área:</strong> <span id="conf-grado">-</span></li>
+                            <li><strong>Docente:</strong> <span id="conf-docente">-</span></li>
+                            <li><strong>Fecha y Hora:</strong> <span id="conf-horario">-</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding-top: 0.5rem;">
+                <button type="button" id="btn-cerrar-confirmacion" class="btn btn-primary btn-block" onclick="cerrarModalConfirmacion()" disabled>
+                    <i class="fa-solid fa-envelope-open-text"></i> Entendido, revisaré mi correo (<span id="countdown-timer">10</span>s)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Barra de Navegacion -->
     <header class="app-header">
         <div class="header-container">
