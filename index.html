@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comfandi - Agendamiento de Matrículas Académicas</title>
+    <title>Comfandi E Yumbo 2026 - 2027</title>
     <meta name="description"
         content="Sistema de agendamiento de citas para matrícula académica entre acudientes y docentes de Comfandi sede Yumbo.">
     <!-- Carga de tipografía moderna desde Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="./img/iconopage.ico" type="image/x-icon">
     <!-- Carga de iconos mediante FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Estilos personalizados -->
@@ -111,7 +112,8 @@
     </div>
 
     <!-- Modal de Reprogramación -->
-    <div id="modal-reprogramar" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-reprogramar-title">
+    <div id="modal-reprogramar" class="modal-overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="modal-reprogramar-title">
         <div class="modal-card">
             <div class="modal-header">
                 <h2 id="modal-reprogramar-title">Reprogramar Cita de Matrícula</h2>
@@ -136,7 +138,8 @@
 
                     <div id="reprogramar-horas-container" class="hidden">
                         <label>Seleccione la nueva hora de atención</label>
-                        <p class="helper-text">Solo se muestran las horas que aún no han sido reservadas para este grado.</p>
+                        <p class="helper-text">Solo se muestran las horas que aún no han sido reservadas para este
+                            grado.</p>
                         <div id="reprogramar-horarios-grid" class="horarios-grid">
                             <!-- Renderizado dinámicamente -->
                         </div>
@@ -341,21 +344,24 @@
 
         <!-- PESTANA 2: Agendamientos Registrados -->
         <section id="section-citas" class="tab-content">
-            
+
             <!-- Contenedor de Consulta de Correo (Usuario público) -->
             <div id="citas-consulta-container" class="login-wrapper hidden">
                 <div class="login-card" style="max-width: 480px;">
                     <div class="login-header">
-                        <i class="fa-regular fa-envelope-open login-shield-icon" style="color: var(--color-primary);"></i>
+                        <i class="fa-regular fa-envelope-open login-shield-icon"
+                            style="color: var(--color-primary);"></i>
                         <h2>Consultar mis Agendamientos</h2>
-                        <p>Ingrese el correo electrónico utilizado al registrar el agendamiento para consultar sus citas.</p>
+                        <p>Ingrese el correo electrónico utilizado al registrar el agendamiento para consultar sus
+                            citas.</p>
                     </div>
                     <form id="form-consulta-correo" onsubmit="handleConsultarCitas(event)" novalidate>
                         <div class="form-group" style="margin-bottom: 1.5rem;">
                             <label for="input-consulta-correo">Correo Electrónico del Acudiente</label>
                             <div class="input-wrapper">
                                 <i class="fa-regular fa-envelope input-icon"></i>
-                                <input type="email" id="input-consulta-correo" placeholder="Ej. acudiente@email.com" required>
+                                <input type="email" id="input-consulta-correo" placeholder="Ej. acudiente@email.com"
+                                    required>
                             </div>
                             <span class="error-msg" id="error-consulta-correo"></span>
                         </div>
@@ -371,8 +377,10 @@
                 <div class="dashboard-header">
                     <div class="title-area">
                         <h1>Agendamientos de Matrícula</h1>
-                        <p id="citas-resultados-subtitle">Historial completo de citas de matrícula académica registradas.</p>
-                        <button id="btn-cambiar-consulta-correo" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem; display: none;" onclick="mostrarFormConsulta()">
+                        <p id="citas-resultados-subtitle">Historial completo de citas de matrícula académica
+                            registradas.</p>
+                        <button id="btn-cambiar-consulta-correo" class="btn btn-secondary btn-sm"
+                            style="margin-top: 0.5rem; display: none;" onclick="mostrarFormConsulta()">
                             <i class="fa-solid fa-arrow-left"></i> Consultar otro correo
                         </button>
                     </div>
@@ -394,9 +402,11 @@
                 <div id="citas-empty-state" class="empty-state hidden">
                     <i class="fa-regular fa-folder-open empty-icon"></i>
                     <h3>No hay agendamientos registrados</h3>
-                    <p id="citas-empty-text">Los agendamientos de matrícula realizados por los acudientes aparecerán en esta sección.</p>
+                    <p id="citas-empty-text">Los agendamientos de matrícula realizados por los acudientes aparecerán en
+                        esta sección.</p>
                     <div class="empty-state-actions" style="margin-top: 1rem; display: flex; gap: 1rem;">
-                        <button id="btn-empty-cambiar-correo" class="btn btn-secondary btn-sm" onclick="mostrarFormConsulta()">
+                        <button id="btn-empty-cambiar-correo" class="btn btn-secondary btn-sm"
+                            onclick="mostrarFormConsulta()">
                             Consultar otro correo
                         </button>
                         <button class="btn btn-primary btn-sm" onclick="switchTab('agendar')">
