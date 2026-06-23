@@ -500,11 +500,12 @@ function renderizarCitas(citas) {
         return;
     }
 
+    // Usar contenedor de lista en lugar de grilla estrecha
+    listGrid.className = "citas-list-container";
     listGrid.classList.remove("hidden");
     emptyState.classList.add("hidden");
 
     citas.forEach(cita => {
-        // Obtener el docente para este grado
         const gradoDetalle = gradosDisponibles.find(g => g.grado === cita.grado);
         const docenteNombre = gradoDetalle ? gradoDetalle.docente : "No asignado";
         const areaNombre = gradoDetalle ? gradoDetalle.area : "Área no asignada";
@@ -516,59 +517,58 @@ function renderizarCitas(citas) {
             horarioFormateado = `${diaFormateado} a las ${partesHorario[2]}`;
         }
 
-        const card = document.createElement("div");
-        card.className = "cita-card";
+        const rowItem = document.createElement("div");
+        rowItem.className = "cita-row-item" + (cita.estado === "Atendido" ? " cita-row-atendido" : "");
 
-        card.innerHTML = `
-            <div class="cita-card-header">
-                <div class="student-info">
-                    <span class="student-name">${escapeHTML(cita.estudiante)}</span>
-                    <span class="student-grade">${escapeHTML(areaNombre)}</span>
+        const badgeHTML = cita.estado === "Atendido"
+            ? `<span class="badge-atendido"><i class="fa-solid fa-circle-check"></i> Atendido</span>`
+            : `<span class="badge-agendado"><i class="fa-regular fa-calendar"></i> Agendado</span>`;
+
+        rowItem.innerHTML = `
+            <div class="cita-row-col col-student">
+                <span class="col-label">Estudiante</span>
+                <span class="student-name"><span class="prefix-text">Estudiante:</span> ${escapeHTML(cita.estudiante)}</span>
+                <span class="student-grade">${escapeHTML(areaNombre)}</span>
+            </div>
+            
+            <div class="cita-row-col col-acudiente">
+                <div class="docente-info">
+                <span class="col-label">Acudiente</span>
+                <span class="acudiente-name"><span class="prefix-text">Acudiente:</span>${escapeHTML(cita.acudiente)}</span>
                 </div>
-                <div class="header-actions">
+                <div class="acudiente-contact">
+                    <span><i class="fa-solid fa-phone"></i> ${escapeHTML(cita.telefono)}</span>
+                    <span><i class="fa-regular fa-envelope"></i> ${escapeHTML(cita.correo)}</span>
+                </div>
+            </div>
+            
+            <div class="cita-row-col col-docente-horario">
+                <div class="docente-info">
+                    <span class="col-label">Docente</span>
+                    <span class="docente-name"><span class="prefix-text">Docente:</span> ${escapeHTML(docenteNombre)}</span>
+                </div>
+                <div class="horario-info" style="margin-top: 0.25rem;">
+                    <span class="col-label">Horario</span>
+                    <span class="horario-val"><i class="fa-regular fa-calendar-days"></i> ${escapeHTML(horarioFormateado)}</span>
+                </div>
+            </div>
+            
+            <div class="cita-row-col col-status-actions">
+                <span class="col-label">Estado y Acciones</span>
+                <div class="status-wrapper">
+                    ${badgeHTML}
+                </div>
+                <div class="actions-wrapper">
                     <select class="cita-card-actions" onchange="handleCardAction(this, '${cita.grado}', '${escapeHTML(cita.horario)}')">
                         <option value="" disabled selected>Acciones</option>
-                        <option value="reprogramar">Reprogramar cita</option>
-                        <option value="cancelar">Cancelar cita</option>
+                        <option value="reprogramar">Reprogramar</option>
+                        <option value="cancelar">Cancelar</option>
+                        ${cita.estado !== 'Atendido' ? '<option value="atendido">Marcar Atendido</option>' : ''}
                     </select>
                 </div>
             </div>
-            
-            <div class="cita-card-body">
-                <div class="info-row">
-                    <i class="fa-regular fa-user"></i>
-                    <span class="label">Acudiente:</span>
-                    <span class="value">${escapeHTML(cita.acudiente)}</span>
-                </div>
-                <div class="info-row">
-                    <i class="fa-regular fa-user"></i>
-                    <span class="label">Estudiante:</span>
-                    <span class="value">${escapeHTML(cita.estudiante)}</span>
-                </div>
-                <div class="info-row">
-                    <i class="fa-solid fa-phone"></i>
-                    <span class="label">Teléfono:</span>
-                    <span class="value">${escapeHTML(cita.telefono)}</span>
-                </div>
-                <div class="info-row">
-                    <i class="fa-regular fa-envelope"></i>
-                    <span class="label">Correo:</span>
-                    <span class="value">${escapeHTML(cita.correo)}</span>
-                </div>
-                <div class="info-row">
-                    <i class="fa-solid fa-chalkboard-user"></i>
-                    <span class="label">Docente:</span>
-                    <span class="value">${escapeHTML(docenteNombre)}</span>
-                </div>
-            </div>
-            
-            <div class="cita-card-footer">
-                <i class="fa-regular fa-calendar"></i>
-                <span>${escapeHTML(horarioFormateado)}</span>
-            </div>
         `;
-
-        listGrid.appendChild(card);
+        listGrid.appendChild(rowItem);
     });
 }
 
@@ -694,6 +694,33 @@ async function handleCardAction(selectElement, grado, horario) {
         }
     } else if (action === "reprogramar") {
         cargarHorariosReprogramar(grado, horario);
+    } else if (action === "atendido") {
+        const confirmar = confirm("¿Desea marcar esta cita como Atendida?");
+        if (confirmar) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/citas/estado`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        grado: grado,
+                        horario: horario,
+                        estado: "Atendido"
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showToast("Cita Atendida", "El agendamiento se ha marcado como Atendido con éxito.", "success");
+                    await refrescarCitas(); // Recargar datos
+                } else {
+                    showToast("Error", data.detail || "No se pudo actualizar el estado del agendamiento.", "error");
+                }
+            } catch (error) {
+                console.error("Error al actualizar estado de la cita:", error);
+                showToast("Error de conexión", "No se pudo comunicar con el servidor.", "error");
+            }
+        }
     }
     // Reiniciar el select
     selectElement.value = "";
@@ -842,7 +869,7 @@ function showDayAppointments(year, month, day, appointments) {
 
     appointments.forEach(cita => {
         const item = document.createElement("div");
-        item.className = "calendar-app-item";
+        item.className = "calendar-app-item" + (cita.estado === "Atendido" ? " calendar-app-item-atendido" : "");
 
         const gradoDetalle = gradosDisponibles.find(g => g.grado === cita.grado);
         const docenteNombre = gradoDetalle ? gradoDetalle.docente : "No asignado";
@@ -854,7 +881,10 @@ function showDayAppointments(year, month, day, appointments) {
         item.innerHTML = `
             <div class="app-item-header">
                 <span class="app-item-time"><i class="fa-regular fa-clock"></i> ${hora}</span>
-                <span class="app-item-grade">${escapeHTML(areaNombre)}</span>
+                <span class="app-item-grade">
+                    ${escapeHTML(areaNombre)}
+                    ${cita.estado === "Atendido" ? ' <span class="badge-atendido-small"><i class="fa-solid fa-check"></i> Atendido</span>' : ''}
+                </span>
             </div>
             <div class="app-item-body">
                 <p><strong>Estudiante:</strong> ${escapeHTML(cita.estudiante)}</p>

@@ -1730,3 +1730,321 @@ html, body {
         right: 2px;
     }
 }
+
+/* ==========================================================================
+   ESTILOS DE CITAS ATENDIDAS
+   ========================================================================== */
+.cita-card-atendido {
+    background-color: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+}
+
+.cita-card-atendido .cita-card-header {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+    border-bottom: 1px solid #bbf7d0 !important;
+}
+
+.cita-card-atendido .cita-card-footer {
+    background-color: #dcfce7 !important;
+    border-top: 1px solid #bbf7d0 !important;
+    color: #166534 !important;
+}
+
+.badge-atendido {
+    background-color: #dcfce7;
+    color: #15803d;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+    border: 1px solid #bbf7d0;
+    vertical-align: middle;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.calendar-app-item-atendido {
+    background-color: #f0fdf4 !important;
+    border-left-color: #16a34a !important;
+    border-color: #bbf7d0 !important;
+}
+
+.badge-atendido-small {
+    color: #15803d;
+    font-size: 0.68rem;
+    font-weight: 700;
+    background-color: #dcfce7;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    border: 1px solid #bbf7d0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+/* ==========================================================================
+   ESTILOS DE AGENDAMIENTOS EN VISTA DE LISTA MODERNA
+   ========================================================================== */
+.citas-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.cita-row-item {
+    display: grid;
+    grid-template-columns: 1.8fr 2.5fr 2.5fr 1.5fr;
+    align-items: center;
+    gap: 1.25rem;
+    background-color: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.cita-row-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary-light);
+}
+
+/* Fila para Citas Atendidas */
+.cita-row-item.cita-row-atendido {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.cita-row-item.cita-row-atendido:hover {
+    border-color: #86efac;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.08);
+}
+
+/* Columnas */
+.cita-row-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.col-label {
+    display: none; /* Oculto en desktop */
+}
+
+/* Estudiante */
+.cita-row-item .student-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    line-height: 1.2;
+}
+
+.cita-row-item .student-grade {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Acudiente */
+.cita-row-item .acudiente-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+}
+
+.cita-row-item .acudiente-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.cita-row-item .acudiente-contact span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cita-row-item .acudiente-contact i {
+    color: #94a3b8;
+    width: 12px;
+}
+
+/* Docente y Horario */
+.col-docente-horario {
+    gap: 0.5rem;
+}
+
+.cita-row-item .docente-info,
+.cita-row-item .horario-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.cita-row-item .docente-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+}
+
+.cita-row-item .horario-val {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Estado y Acciones */
+.col-status-actions {
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+
+.col-status-actions .status-wrapper {
+    display: flex;
+}
+
+/* Selector de Acciones */
+.cita-row-item .cita-card-actions {
+    background-color: white;
+    border: 1.5px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
+    color: #475569;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    outline: none;
+    width: 100%;
+    min-width: 130px;
+}
+
+.cita-row-item .cita-card-actions:hover {
+    border-color: var(--color-primary-light);
+    background-color: var(--bg-body);
+}
+
+/* Badge de Agendado */
+.badge-agendado {
+    background-color: oklch(0.97 0.025 261.562 / 0.6);
+    color: var(--color-primary);
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 1px solid var(--border-color);
+}
+
+.prefix-text {
+    font-weight: 500;
+    color: #64748b;
+    margin-right: 0.25rem;
+}
+
+@media (max-width: 991px) {
+    .cita-row-item {
+        grid-template-columns: 1.5fr 2fr 2fr 1.5fr;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .citas-list-container {
+        gap: 0.75rem;
+    }
+
+    .cita-row-item {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 1.25rem;
+        border-radius: 16px;
+    }
+
+    .cita-row-item.cita-row-atendido {
+        border-left: 5px solid #16a34a;
+    }
+
+    .cita-row-col {
+        border-bottom: 1px dashed #e2e8f0;
+        padding-bottom: 0.5rem;
+    }
+
+    .cita-row-col:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .col-label {
+        display: block;
+        font-size: 0.72rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.15rem;
+    }
+
+    .cita-row-item .student-name {
+        font-size: 1rem;
+    }
+
+    .cita-row-item .student-grade {
+        font-size: 0.78rem;
+    }
+
+    .col-docente-horario {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .cita-row-item .docente-info,
+    .cita-row-item .horario-info {
+        flex: 1;
+    }
+
+    .col-status-actions {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .col-status-actions .status-wrapper {
+        flex: unset;
+    }
+
+    .col-status-actions .actions-wrapper {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .cita-row-item .cita-card-actions {
+        width: 100%;
+        max-width: 130px;
+        min-width: unset;
+        padding: 0.4rem 0.5rem;
+    }
+}
