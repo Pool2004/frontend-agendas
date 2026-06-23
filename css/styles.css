@@ -1499,3 +1499,234 @@ body {
     color: #64748b;
     line-height: 1.5;
 }
+
+/* ==========================================================================
+   DISEÑO RESPONSIVO COMPLETO Y MÓVIL
+   ========================================================================== */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Grillas Flexibles Modernas (Previenen Desbordamiento) */
+.horarios-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 130px), 1fr));
+}
+
+.citas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+}
+
+@media (max-width: 991px) {
+    /* Ocultar imagen decorativa en tablets y celulares para priorizar el formulario */
+    .hero-image-wrapper {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Contenedor Principal */
+    .app-main {
+        padding: 1.25rem 1rem;
+    }
+
+    /* Cabecera / Header */
+    .header-container {
+        flex-direction: column;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .logo {
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* Pestañas de Navegación Deslizables */
+    .nav-tabs {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+        gap: 0.25rem;
+        justify-content: flex-start;
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+        height: 3px;
+    }
+
+    .nav-tabs::-webkit-scrollbar-thumb {
+        background-color: var(--border-color);
+        border-radius: 3px;
+    }
+
+    .nav-tab {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    /* Tarjetas de Contenido y Formularios */
+    .info-card, .form-card, .login-card {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .info-card h1 {
+        font-size: 1.75rem;
+    }
+
+    .info-card p {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Dashboard de Citas */
+    .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    /* Reordenamiento del Calendario (Calendario arriba, citas del día abajo) */
+    .calendar-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-container {
+        order: 1;
+    }
+
+    .calendar-sidebar {
+        order: 2;
+        max-height: 350px;
+    }
+
+    /* Reducción general de Espaciados en Modales */
+    .modal-overlay {
+        padding: 1rem;
+    }
+
+    .modal-card {
+        border-radius: 16px;
+        max-height: 95vh;
+    }
+
+    .modal-header {
+        padding: 1.25rem 1.25rem 1rem;
+    }
+
+    .modal-logo {
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-logo-img {
+        height: 40px;
+    }
+
+    .modal-header h2 {
+        font-size: 1.15rem;
+    }
+
+    .modal-header p {
+        font-size: 0.78rem;
+    }
+
+    .modal-body {
+        padding: 1rem 1.25rem;
+    }
+
+    .modal-intro {
+        font-size: 0.82rem;
+        margin-bottom: 1rem;
+    }
+
+    .instrucciones-list {
+        gap: 0.75rem;
+    }
+
+    .instrucciones-list li {
+        font-size: 0.8rem;
+        gap: 0.6rem;
+    }
+
+    .inst-num {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        font-size: 0.75rem;
+    }
+
+    .modal-footer {
+        padding: 0.75rem 1.25rem 1.25rem;
+        gap: 0.75rem;
+    }
+
+    .terms-label {
+        font-size: 0.78rem;
+        padding: 0.5rem 0.6rem;
+        gap: 0.5rem;
+    }
+
+    .terms-label input[type="checkbox"] {
+        width: 14px;
+        height: 14px;
+        min-width: 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Footer del Modal (Botones en vertical y de ancho completo) */
+    .modal-footer {
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+        gap: 0.75rem !important;
+    }
+
+    .modal-footer .btn {
+        width: 100% !important;
+    }
+
+    /* Footer Institucional */
+    .footer-container {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .footer-sep {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Optimización de Logo en Celulares Muy Pequeños */
+    .logo-img {
+        height: 36px;
+    }
+
+    .logo-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .logo-sede {
+        font-size: 0.65rem;
+    }
+
+    .logo-divider {
+        height: 22px;
+    }
+
+    /* Calendario: Reducción de insignias de eventos */
+    .calendar-event-badge {
+        width: 12px;
+        height: 12px;
+        font-size: 0.55rem;
+        top: 2px;
+        right: 2px;
+    }
+}
