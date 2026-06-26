@@ -466,6 +466,12 @@
                     <h1>Calendario de Agendamientos</h1>
                     <p>Visualización mensual y control de citas agendadas por día.</p>
                 </div>
+                <div class="calendar-filter-bar">
+                    <label for="select-filtro-docente"><i class="fa-solid fa-filter"></i> Filtrar por Docente:</label>
+                    <select id="select-filtro-docente" onchange="handleFiltroDocenteChange()">
+                        <option value="">Todos los docentes</option>
+                    </select>
+                </div>
             </div>
 
             <div class="calendar-wrapper">

@@ -100,12 +100,27 @@ function switchTab(tabName) {
         }
     } else if (tabName === "calendario") {
         renderCalendar();
-        // Seleccionar por defecto el día 8 de Julio de 2026
-        const initialAppointments = todasLasCitas.filter(cita => {
-            const parsed = parseHorarioDate(cita.horario);
-            return parsed && parsed.day === 8 && parsed.month === 6 && parsed.year === 2026;
-        });
-        showDayAppointments(2026, 6, 8, initialAppointments);
+        // Buscar el elemento del día 8 de Julio de 2026 (si el mes actual es Julio 2026) y seleccionarlo
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth();
+        if (year === 2026 && month === 6) {
+            const dayElements = document.querySelectorAll(".calendar-day.current-month-day");
+            dayElements.forEach(el => {
+                if (parseInt(el.textContent, 10) === 8) {
+                    el.click();
+                }
+            });
+        } else {
+            // Si es otro mes, limpiar listado lateral
+            const container = document.getElementById("day-appointments-list");
+            const title = document.getElementById("selected-date-title");
+            if (title) title.textContent = "Seleccione un día";
+            if (container) {
+                container.innerHTML = `
+                    <p class="no-appointments-msg">Seleccione un día en el calendario para ver los agendamientos.</p>
+                `;
+            }
+        }
     }
 }
 
@@ -136,9 +151,69 @@ async function cargarGrados() {
             selectGrado.appendChild(option);
         });
 
+        // Poblar filtro de docentes para el calendario
+        poblarFiltroDocentes();
+
     } catch (error) {
         console.error("Error al cargar grados:", error);
         showToast("Error de conexión", "No se pudo conectar con el servidor para obtener los grados.", "error");
+    }
+}
+
+// Genera las opciones del filtro por docente a partir de los grados disponibles
+function poblarFiltroDocentes() {
+    const selectFiltro = document.getElementById("select-filtro-docente");
+    if (!selectFiltro) return;
+
+    // Obtener nombres de docentes únicos y ordenarlos alfabéticamente
+    const docentes = [...new Set(gradosDisponibles.map(g => g.docente))].sort();
+
+    selectFiltro.innerHTML = '<option value="">Todos los docentes</option>';
+    docentes.forEach(docente => {
+        const option = document.createElement("option");
+        option.value = docente;
+        option.textContent = docente;
+        selectFiltro.appendChild(option);
+    });
+}
+
+// Maneja el cambio de filtro por docente en el calendario
+function handleFiltroDocenteChange() {
+    renderCalendar();
+    
+    // Obtener el día seleccionado actualmente
+    const selectedDayEl = document.querySelector(".calendar-day.selected-day");
+    if (selectedDayEl) {
+        const day = parseInt(selectedDayEl.textContent, 10);
+        const year = currentCalendarDate.getFullYear();
+        const month = currentCalendarDate.getMonth();
+        
+        const filtroDocente = document.getElementById("select-filtro-docente") ? document.getElementById("select-filtro-docente").value : "";
+        
+        const dayAppointments = todasLasCitas.filter(cita => {
+            const parsed = parseHorarioDate(cita.horario);
+            const matchesDay = parsed && parsed.day === day && parsed.month === month && parsed.year === year;
+            if (!matchesDay) return false;
+            
+            if (filtroDocente) {
+                const gradoDetalle = gradosDisponibles.find(g => g.grado === cita.grado);
+                const docenteNombre = gradoDetalle ? gradoDetalle.docente : "";
+                return docenteNombre === filtroDocente;
+            }
+            return true;
+        });
+        
+        showDayAppointments(year, month, day, dayAppointments);
+    } else {
+        // Limpiar el listado lateral si no hay día seleccionado
+        const container = document.getElementById("day-appointments-list");
+        const title = document.getElementById("selected-date-title");
+        if (title) title.textContent = "Seleccione un día";
+        if (container) {
+            container.innerHTML = `
+                <p class="no-appointments-msg">Seleccione un día en el calendario para ver los agendamientos.</p>
+            `;
+        }
     }
 }
 
@@ -486,6 +561,7 @@ function clearError(field) {
 function renderizarCitas(citas) {
     const listGrid = document.getElementById("citas-lista-grid");
     const emptyState = document.getElementById("citas-empty-state");
+    const isLoggedIn = sessionStorage.getItem("adminLoggedIn") === "true";
 
     listGrid.innerHTML = "";
 
@@ -558,7 +634,7 @@ function renderizarCitas(citas) {
                         <option value="" disabled selected>Acciones</option>
                         <option value="reprogramar">Reprogramar</option>
                         <option value="cancelar">Cancelar</option>
-                        ${cita.estado !== 'Atendido' ? '<option value="atendido">Marcar Atendido</option>' : ''}
+                        ${isLoggedIn && cita.estado !== 'Atendido' ? '<option value="atendido">Marcar Atendido</option>' : ''}
                     </select>
                 </div>
             </div>
@@ -731,6 +807,10 @@ function renderCalendar() {
 
     if (!monthYearTitle || !daysGrid) return;
 
+    // Obtener el día seleccionado actualmente ANTES de limpiar el grid
+    const selectedDayEl = document.querySelector(".calendar-day.selected-day");
+    const selectedDayVal = selectedDayEl ? parseInt(selectedDayEl.textContent, 10) : null;
+
     const year = currentCalendarDate.getFullYear();
     const month = currentCalendarDate.getMonth();
 
@@ -757,6 +837,10 @@ function renderCalendar() {
         daysGrid.appendChild(dayDiv);
     }
 
+    // Obtener valor del filtro de docente
+    const selectFiltro = document.getElementById("select-filtro-docente");
+    const filtroDocente = selectFiltro ? selectFiltro.value : "";
+
     // Rellenar días del mes actual
     for (let day = 1; day <= totalDays; day++) {
         const dayDiv = document.createElement("div");
@@ -766,7 +850,15 @@ function renderCalendar() {
         // Buscar agendamientos en este día específico
         const dayAppointments = todasLasCitas.filter(cita => {
             const parsed = parseHorarioDate(cita.horario);
-            return parsed && parsed.day === day && parsed.month === month && parsed.year === year;
+            const matchesDay = parsed && parsed.day === day && parsed.month === month && parsed.year === year;
+            if (!matchesDay) return false;
+
+            if (filtroDocente) {
+                const gradoDetalle = gradosDisponibles.find(g => g.grado === cita.grado);
+                const docenteNombre = gradoDetalle ? gradoDetalle.docente : "";
+                return docenteNombre === filtroDocente;
+            }
+            return true;
         });
 
         if (dayAppointments.length > 0) {
@@ -792,8 +884,7 @@ function renderCalendar() {
         });
 
         // Autoseleccionar el día por defecto si ya estaba seleccionado
-        const selectedDayEl = document.querySelector(".calendar-day.selected-day");
-        if (selectedDayEl && parseInt(selectedDayEl.textContent, 10) === day) {
+        if (selectedDayVal === day) {
             dayDiv.classList.add("selected-day");
         }
 
@@ -839,6 +930,15 @@ function parseHorarioDate(horarioStr) {
 
 // Muestra las citas en el listado lateral
 function showDayAppointments(year, month, day, appointments) {
+    // Ordenar citas de más temprano a más tarde
+    appointments.sort((a, b) => {
+        const partsA = a.horario.split(" ");
+        const partsB = b.horario.split(" ");
+        const horaA = partsA.length > 2 ? partsA[2] : a.horario;
+        const horaB = partsB.length > 2 ? partsB[2] : b.horario;
+        return horaA.localeCompare(horaB);
+    });
+
     const monthNames = [
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
